@@ -6,12 +6,23 @@ The site is designed for GitHub Pages, but it is just plain HTML and CSS. There 
 
 ## File structure
 
+Published site files:
+
 ```text
 /
 index.html
 styles.css
 README.md
 .nojekyll
+```
+
+Regression test files:
+
+```text
+/.gitignore
+/tests/playwright.config.mjs
+/tests/regression.spec.mjs
+/tests/run-regression.sh
 ```
 
 ## Edit the three links
@@ -75,10 +86,31 @@ source .venv/bin/activate
 python3 -m http.server 8000
 ```
 
+## Run regression tests
+
+Run the full mobile, tablet, and desktop regression suite with one command:
+
+```bash
+bash tests/run-regression.sh
+```
+
+The suite installs pinned Playwright Test into ignored `.test-results/runner` tooling, starts a local Python static server, and checks multiple viewport sizes:
+
+- 320 px mobile
+- 390 px mobile
+- 768 px tablet
+- 1024 px tablet landscape
+- 1366 px desktop
+- 1440 px wide desktop
+
+The tests verify content, link targets, keyboard focus order, visible focus styles, tap target sizes, no horizontal overflow, light and dark themes, contrast, reduced motion handling, and that the page does not make unexpected external runtime requests.
+
+Generated reports, browser artifacts, and temporary test dependencies are written under `.test-results/` and are ignored by Git. No `package.json`, lockfile, or runtime dependency is required for the site.
+
 ## Publish with GitHub Pages
 
 1. Create a GitHub repository.
-2. Add `index.html`, `styles.css`, `README.md`, and `.nojekyll` to the repository root.
+2. Add the repository files to the repository root.
 3. Commit and push the files.
 4. Open the repository Settings.
 5. Go to Pages.
