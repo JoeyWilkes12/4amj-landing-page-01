@@ -1,6 +1,6 @@
-# Family Reunion Links
+# Whiteley Reunion 2026 Links
 
-A small, static link hub for a family reunion. It gives family members quick access to genealogy resources, food planning, and other shared reunion links.
+A small, static link hub for the Whiteley Reunion 2026. It gives family members quick access to William Henry Adams family history, food planning, and other shared reunion links.
 
 The site is designed for GitHub Pages, but it is just plain HTML and CSS. There is no framework, no package manager, no build step, no analytics, and no external dependencies.
 
@@ -21,7 +21,7 @@ Open `index.html` and find the `<nav class="link-list">` section.
 Each link card looks like this:
 
 ```html
-<a class="link-card" href="./genealogy/">
+<a class="link-card" href="https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng">
 ```
 
 Change the `href` value to the real destination when it is ready. Good replacement links include:
@@ -32,21 +32,20 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 - GitHub Pages subpages
 - Shared documents
 
-The current placeholder links are:
+The current links are:
 
-- Genealogy: `./genealogy/`
+- William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
 - Reunion Food: `./reunion-food/`
 - Misc: `./misc/`
 
-Relative links are used so the site works as either a GitHub Pages user site or a project site.
+Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 
 ## Edit the page text
 
 Open `index.html` to change the main wording:
 
-- Title: `Family Reunion Links`
+- Title: `Whiteley Reunion 2026 Links`
 - Subtitle: `Quick access to genealogy, food planning, and shared reunion resources.`
-- Footer: `Update these links as reunion plans change.`
 
 Open `styles.css` to change colors, spacing, border radius, shadows, width, or transitions. These values are grouped at the top of the file as CSS custom properties.
 
