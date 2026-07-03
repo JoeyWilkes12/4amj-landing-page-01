@@ -16,8 +16,9 @@ const expectedLinks = [
   },
   {
     title: "Reunion Food",
-    description: "Meal plans, potluck signups, food assignments, and dietary notes.",
-    href: "./reunion-food/",
+    description: "Meal plans, food assignments & schedule, and dietary notes.",
+    href:
+      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
   },
   {
     title: "Misc",
@@ -28,6 +29,19 @@ const expectedLinks = [
 
 function readSiteFile(fileName) {
   return readFileSync(resolve(siteRoot, fileName), "utf8");
+}
+
+function homeURL(baseURL) {
+  return new URL("./", baseURL).toString();
+}
+
+function assetURL(baseURL, path) {
+  return new URL(path, baseURL).toString();
+}
+
+function isAllowedRuntimeRequest(url, baseURL) {
+  const home = homeURL(baseURL);
+  return url === home || url.startsWith(home) || url.startsWith("data:");
 }
 
 function parseRgb(value) {
@@ -139,11 +153,21 @@ test.describe("responsive link hub behavior", () => {
     page.pageErrors = pageErrors;
   });
 
+  test("serves the landing page and stylesheet", async ({ request, baseURL }) => {
+    const homeResponse = await request.get(homeURL(baseURL));
+    expect(homeResponse.status()).toBe(200);
+    expect(await homeResponse.text()).toContain(expectedTitle);
+
+    const stylesheetResponse = await request.get(assetURL(baseURL, "./styles.css"));
+    expect(stylesheetResponse.status()).toBe(200);
+    expect(await stylesheetResponse.text()).toContain("--color-accent: #687249;");
+  });
+
   test("renders core content, links, and layout without overflow", async ({ page, baseURL }) => {
     const requestedUrls = [];
     page.on("request", (request) => requestedUrls.push(request.url()));
 
-    await page.goto("/");
+    await page.goto(homeURL(baseURL));
 
     await expect(page).toHaveTitle(expectedTitle);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(expectedTitle);
@@ -222,15 +246,15 @@ test.describe("responsive link hub behavior", () => {
     expect(overlaps(metrics.toggle, metrics.heading)).toBe(false);
 
     const unexpectedRequests = requestedUrls.filter(
-      (url) => !url.startsWith(`${baseURL}/`) && !url.startsWith("data:"),
+      (url) => !isAllowedRuntimeRequest(url, baseURL),
     );
     expect(unexpectedRequests).toEqual([]);
     expect(page.consoleErrors).toEqual([]);
     expect(page.pageErrors).toEqual([]);
   });
 
-  test("defaults to light theme and toggles to dark theme", async ({ page }) => {
-    await page.goto("/");
+  test("defaults to light theme and toggles to dark theme", async ({ page, baseURL }) => {
+    await page.goto(homeURL(baseURL));
 
     const toggle = page.getByRole("checkbox", { name: "Toggle dark theme" });
     await expect(toggle).not.toBeChecked();
@@ -272,8 +296,8 @@ test.describe("responsive link hub behavior", () => {
     expect(contrastRatio(darkTheme.avatarColor, darkTheme.avatarBackground)).toBeGreaterThanOrEqual(4.5);
   });
 
-  test("keeps keyboard order and visible focus states", async ({ page }) => {
-    await page.goto("/");
+  test("keeps keyboard order and visible focus states", async ({ page, baseURL }) => {
+    await page.goto(homeURL(baseURL));
     await page.keyboard.press("Tab");
 
     const toggle = page.locator("#theme-toggle");
@@ -308,8 +332,8 @@ test.describe("responsive link hub behavior", () => {
     }
   });
 
-  test("maintains readable contrast in light and dark themes", async ({ page }) => {
-    await page.goto("/");
+  test("maintains readable contrast in light and dark themes", async ({ page, baseURL }) => {
+    await page.goto(homeURL(baseURL));
 
     async function sampleContrast() {
       return page.evaluate(() => {
@@ -355,9 +379,9 @@ test.describe("responsive link hub behavior", () => {
     }
   });
 
-  test("honors reduced motion preferences", async ({ page }) => {
+  test("honors reduced motion preferences", async ({ page, baseURL }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
+    await page.goto(homeURL(baseURL));
 
     const transitionDurations = await page.locator(".link-card").first().evaluate((element) =>
       getComputedStyle(element)

@@ -6,7 +6,19 @@ const testRoot = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(testRoot, "..");
 const resultsRoot = resolve(siteRoot, ".test-results");
 const port = Number(process.env.REGRESSION_PORT || 4173);
-const baseURL = `http://127.0.0.1:${port}`;
+const localBaseURL = `http://127.0.0.1:${port}/`;
+const configuredBaseURL = process.env.REGRESSION_BASE_URL;
+
+function normalizeBaseURL(value) {
+  const url = new URL(value);
+  if (!url.pathname.endsWith("/")) {
+    url.pathname = `${url.pathname}/`;
+  }
+  return url.toString();
+}
+
+const baseURL = configuredBaseURL ? normalizeBaseURL(configuredBaseURL) : localBaseURL;
+const usesLocalServer = !configuredBaseURL;
 
 const viewportProjects = [
   {
@@ -54,13 +66,15 @@ export default defineConfig({
     trace: "retain-on-failure",
     video: "retain-on-failure",
   },
-  webServer: {
-    command: `python3 -m http.server ${port} --bind 127.0.0.1`,
-    cwd: siteRoot,
-    reuseExistingServer: !process.env.CI,
-    stdout: "pipe",
-    stderr: "pipe",
-    timeout: 10_000,
-    url: `${baseURL}/`,
-  },
+  webServer: usesLocalServer
+    ? {
+        command: `python3 -m http.server ${port} --bind 127.0.0.1`,
+        cwd: siteRoot,
+        reuseExistingServer: !process.env.CI,
+        stdout: "pipe",
+        stderr: "pipe",
+        timeout: 10_000,
+        url: baseURL,
+      }
+    : undefined,
 });

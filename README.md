@@ -46,7 +46,7 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 The current links are:
 
 - William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
-- Reunion Food: `./reunion-food/`
+- Reunion Food: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 - Misc: `./misc/`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
@@ -88,13 +88,33 @@ python3 -m http.server 8000
 
 ## Run regression tests
 
-Run the full mobile, tablet, and desktop regression suite with one command:
+Run the local mobile, tablet, and desktop regression suite with one command:
 
 ```bash
 bash tests/run-regression.sh
 ```
 
-The suite installs pinned Playwright Test into ignored `.test-results/runner` tooling, starts a local Python static server, and checks multiple viewport sizes:
+That default command runs the first test layer against a local Python static server. Run individual layers as needed:
+
+```bash
+bash tests/run-regression.sh local
+bash tests/run-regression.sh live
+bash tests/run-regression.sh all
+```
+
+The live layer targets the GitHub Pages deployment:
+
+```text
+https://joeywilkes12.github.io/4amj-landing-page-01/
+```
+
+Override it when needed:
+
+```bash
+LIVE_BASE_URL="https://example.com/project/" bash tests/run-regression.sh live
+```
+
+The suite installs pinned Playwright Test into ignored `.test-results/runner` tooling, starts a local Python static server for the local layer, and checks multiple viewport sizes:
 
 - 320 px mobile
 - 390 px mobile
@@ -103,7 +123,7 @@ The suite installs pinned Playwright Test into ignored `.test-results/runner` to
 - 1366 px desktop
 - 1440 px wide desktop
 
-The tests verify content, link targets, keyboard focus order, visible focus styles, tap target sizes, no horizontal overflow, light and dark themes, contrast, reduced motion handling, and that the page does not make unexpected external runtime requests.
+The tests verify deployment availability, stylesheet loading, content, link targets, keyboard focus order, visible focus styles, tap target sizes, no horizontal overflow, light and dark themes, contrast, reduced motion handling, and that the page does not make unexpected external runtime requests.
 
 Generated reports, browser artifacts, and temporary test dependencies are written under `.test-results/` and are ignored by Git. No `package.json`, lockfile, or runtime dependency is required for the site.
 
