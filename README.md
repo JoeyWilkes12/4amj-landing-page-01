@@ -49,6 +49,8 @@ Open `index.html` to change the main wording:
 
 Open `styles.css` to change colors, spacing, border radius, shadows, width, or transitions. These values are grouped at the top of the file as CSS custom properties.
 
+The theme toggle is CSS-only and defaults to the light theme. The display text uses a local Trajan/Cinzel-inspired serif stack to echo the poster lettering without loading external fonts.
+
 ## Preview locally
 
 From the repository root, run:
