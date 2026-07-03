@@ -1,0 +1,104 @@
+# Family Reunion Links
+
+A small, static link hub for a family reunion. It gives family members quick access to genealogy resources, food planning, and other shared reunion links.
+
+The site is designed for GitHub Pages, but it is just plain HTML and CSS. There is no framework, no package manager, no build step, no analytics, and no external dependencies.
+
+## File structure
+
+```text
+/
+index.html
+styles.css
+README.md
+.nojekyll
+```
+
+## Edit the three links
+
+Open `index.html` and find the `<nav class="link-list">` section.
+
+Each link card looks like this:
+
+```html
+<a class="link-card" href="./genealogy/">
+```
+
+Change the `href` value to the real destination when it is ready. Good replacement links include:
+
+- Notion pages
+- Google Forms
+- Google Drive folders
+- GitHub Pages subpages
+- Shared documents
+
+The current placeholder links are:
+
+- Genealogy: `./genealogy/`
+- Reunion Food: `./reunion-food/`
+- Misc: `./misc/`
+
+Relative links are used so the site works as either a GitHub Pages user site or a project site.
+
+## Edit the page text
+
+Open `index.html` to change the main wording:
+
+- Title: `Family Reunion Links`
+- Subtitle: `Quick access to genealogy, food planning, and shared reunion resources.`
+- Footer: `Update these links as reunion plans change.`
+
+Open `styles.css` to change colors, spacing, border radius, shadows, width, or transitions. These values are grouped at the top of the file as CSS custom properties.
+
+## Preview locally
+
+From the repository root, run:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/
+```
+
+You can also open `index.html` directly in a browser because the site has no build step.
+
+If you want an isolated Python environment for local tooling, create one locally and do not commit it:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m http.server 8000
+```
+
+## Publish with GitHub Pages
+
+1. Create a GitHub repository.
+2. Add `index.html`, `styles.css`, `README.md`, and `.nojekyll` to the repository root.
+3. Commit and push the files.
+4. Open the repository Settings.
+5. Go to Pages.
+6. Publish from the `main` branch and the root folder.
+
+After GitHub Pages is enabled, replace the commented canonical URL placeholder in `index.html` with the final Pages URL if you want a canonical link.
+
+## Hosting fallback options
+
+If GitHub Pages does not meet your uptime or performance needs, the same four files can be hosted almost anywhere that serves static files.
+
+Good alternatives include:
+
+- Cloudflare Pages
+- Netlify
+- Vercel static hosting
+- Amazon S3 or Cloudflare R2 behind a CDN
+- Any basic web server such as Nginx or Apache
+
+No build command is required. Use the repository root as the publish directory.
+
+## Optional custom domain
+
+You can add a custom domain later through your hosting provider. For GitHub Pages, add the domain in the repository Pages settings, then update your DNS records as GitHub instructs. If you add a domain, update the future canonical URL in `index.html` to match it.
