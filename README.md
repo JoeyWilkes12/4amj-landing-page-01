@@ -2,9 +2,9 @@
 
 A small, static link hub for the Whiteley Reunion 2026. It gives family members quick access to William Henry Adams family history, food planning, and other shared reunion links.
 
-The site is designed for GitHub Pages, but it is just plain HTML and CSS. There is no framework, no package manager, no build step, no analytics, and no external dependencies.
+This repository is designed for GitHub Pages, but the site is plain HTML and CSS. There is no framework, package manager, build step, analytics, or external runtime dependency.
 
-## File structure
+## Repository layout
 
 Published site files:
 
@@ -25,7 +25,140 @@ Regression test files:
 /tests/run-regression.sh
 ```
 
-## Edit the three links
+Generated test output is written under `.test-results/`, which is ignored by Git.
+
+## Developer prerequisites
+
+To preview the site, you only need Python 3 or any static file server.
+
+To run the regression suite, install these tools locally:
+
+- `node`
+- `npm`
+- `python3`
+
+The repo intentionally does not include `package.json`, `package-lock.json`, or committed `node_modules`. The regression script installs a pinned Playwright Test runner into `.test-results/runner` and creates a temporary `node_modules` symlink while tests run.
+
+## Local preview
+
+From the repository root:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000/
+```
+
+You can also open `index.html` directly in a browser because the page uses only relative local assets and no build output.
+
+If you prefer an isolated Python environment for local tooling, create one locally and do not commit it:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m http.server 8000
+```
+
+## Run tests
+
+Run the default local regression layer:
+
+```bash
+bash tests/run-regression.sh
+```
+
+That command:
+
+- installs `@playwright/test@1.61.1` into `.test-results/runner` if needed
+- installs the Chromium browser used by Playwright
+- starts a local Python static server on `127.0.0.1:4173`
+- runs the Playwright suite across mobile, tablet, and desktop viewport projects
+- writes HTML reports, traces, screenshots, and videos under `.test-results/`
+
+Run a specific test layer:
+
+```bash
+bash tests/run-regression.sh local
+bash tests/run-regression.sh live
+bash tests/run-regression.sh all
+```
+
+The `live` layer targets the GitHub Pages deployment:
+
+```text
+https://joeywilkes12.github.io/4amj-landing-page-01/
+```
+
+Override it when testing a fork, preview URL, or alternate host:
+
+```bash
+LIVE_BASE_URL="https://example.com/project/" bash tests/run-regression.sh live
+```
+
+Pass extra Playwright arguments after the layer name:
+
+```bash
+bash tests/run-regression.sh local --project mobile-390
+bash tests/run-regression.sh local --grep "contrast"
+bash tests/run-regression.sh local --debug
+```
+
+Useful environment variables:
+
+```text
+REGRESSION_PORT                  Override the local server port. Default: 4173.
+LIVE_BASE_URL                    Override the live deployment URL.
+PLAYWRIGHT_TEST_VERSION          Override the pinned Playwright Test version. Default: 1.61.1.
+PLAYWRIGHT_INSTALL_BROWSERS=skip Skip Playwright's Chromium install step.
+PLAYWRIGHT_HTML_OPEN             Controls the Playwright HTML report auto-open behavior. Default: never.
+CI=1                             Enables one retry through Playwright config.
+```
+
+If a test fails, inspect:
+
+```text
+.test-results/playwright-report/
+.test-results/artifacts/
+```
+
+The HTML report is generated with `open: "never"`, so it will not automatically launch a browser.
+
+## What the tests cover
+
+The regression suite lives in `tests/regression.spec.mjs` and is configured by `tests/playwright.config.mjs`.
+
+Viewport projects:
+
+- 320 px mobile
+- 390 px mobile
+- 768 px tablet
+- 1024 px tablet landscape
+- 1366 px desktop
+- 1440 px wide desktop
+
+The suite checks:
+
+- static source contract for GitHub Pages readiness
+- absence of package manager and runtime dependencies
+- landing page and stylesheet availability
+- expected title, copy, link labels, descriptions, and destinations
+- no horizontal overflow at supported viewport widths
+- no overlap between the theme toggle and header content
+- keyboard tab order and visible focus outlines
+- minimum tap target sizing for link cards
+- light theme default and CSS-only dark theme toggle
+- readable contrast in light and dark themes
+- reduced motion behavior
+- no unexpected external runtime requests
+- no browser console errors or page errors
+
+The tests intentionally duplicate important content and URLs. When you change visible copy, link destinations, color tokens, or core behavior, update `index.html`, `styles.css`, and the matching expectations in `tests/regression.spec.mjs` together.
+
+## Editing content
 
 Open `index.html` and find the `<nav class="link-list">` section.
 
@@ -51,7 +184,7 @@ The current links are:
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 
-## Edit the page text
+## Editing presentation
 
 Open `index.html` to change the main wording:
 
@@ -62,72 +195,9 @@ Open `styles.css` to change colors, spacing, border radius, shadows, width, or t
 
 The theme toggle is CSS-only and defaults to the light theme. The display text uses a local Trajan/Cinzel-inspired serif stack to echo the poster lettering without loading external fonts.
 
-## Preview locally
+## Deployment
 
-From the repository root, run:
-
-```bash
-python3 -m http.server 8000
-```
-
-Then open:
-
-```text
-http://127.0.0.1:8000/
-```
-
-You can also open `index.html` directly in a browser because the site has no build step.
-
-If you want an isolated Python environment for local tooling, create one locally and do not commit it:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m http.server 8000
-```
-
-## Run regression tests
-
-Run the local mobile, tablet, and desktop regression suite with one command:
-
-```bash
-bash tests/run-regression.sh
-```
-
-That default command runs the first test layer against a local Python static server. Run individual layers as needed:
-
-```bash
-bash tests/run-regression.sh local
-bash tests/run-regression.sh live
-bash tests/run-regression.sh all
-```
-
-The live layer targets the GitHub Pages deployment:
-
-```text
-https://joeywilkes12.github.io/4amj-landing-page-01/
-```
-
-Override it when needed:
-
-```bash
-LIVE_BASE_URL="https://example.com/project/" bash tests/run-regression.sh live
-```
-
-The suite installs pinned Playwright Test into ignored `.test-results/runner` tooling, starts a local Python static server for the local layer, and checks multiple viewport sizes:
-
-- 320 px mobile
-- 390 px mobile
-- 768 px tablet
-- 1024 px tablet landscape
-- 1366 px desktop
-- 1440 px wide desktop
-
-The tests verify deployment availability, stylesheet loading, content, link targets, keyboard focus order, visible focus styles, tap target sizes, no horizontal overflow, light and dark themes, contrast, reduced motion handling, and that the page does not make unexpected external runtime requests.
-
-Generated reports, browser artifacts, and temporary test dependencies are written under `.test-results/` and are ignored by Git. No `package.json`, lockfile, or runtime dependency is required for the site.
-
-## Publish with GitHub Pages
+Publish the repository root through GitHub Pages:
 
 1. Create a GitHub repository.
 2. Add the repository files to the repository root.
@@ -140,7 +210,7 @@ After GitHub Pages is enabled, replace the commented canonical URL placeholder i
 
 ## Hosting fallback options
 
-If GitHub Pages does not meet your uptime or performance needs, the same four files can be hosted almost anywhere that serves static files.
+If GitHub Pages does not meet uptime or performance needs, the same files can be hosted almost anywhere that serves static files.
 
 Good alternatives include:
 
@@ -154,4 +224,4 @@ No build command is required. Use the repository root as the publish directory.
 
 ## Optional custom domain
 
-You can add a custom domain later through your hosting provider. For GitHub Pages, add the domain in the repository Pages settings, then update your DNS records as GitHub instructs. If you add a domain, update the future canonical URL in `index.html` to match it.
+You can add a custom domain later through your hosting provider. For GitHub Pages, add the domain in the repository Pages settings, then update DNS records as GitHub instructs. If you add a domain, update the future canonical URL in `index.html` to match it.
