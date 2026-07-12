@@ -181,8 +181,8 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 The current links are:
 
 - William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
-- Reunion Food: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
-- Misc: `./misc/`
+- Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
+- Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 

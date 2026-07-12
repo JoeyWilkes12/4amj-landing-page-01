@@ -22,15 +22,15 @@ const expectedLinks = [
       "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
   },
   {
-    title: "Reunion Food",
-    description: "Meal plans, food assignments & schedule, and dietary notes.",
-    href:
-      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
+    title: "Reunion Schedule & Food",
+    description: "Schedule overview and food details.",
+    href: "https://joeywilkes12.github.io/digital-schedule-website/",
   },
   {
-    title: "Misc",
-    description: "Other reunion resources, announcements, maps, schedules, and shared links.",
-    href: "./misc/",
+    title: "Miscellaneous",
+    description: "Google Drive file share for downloadable and viewable resources.",
+    href:
+      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
   },
 ];
 
