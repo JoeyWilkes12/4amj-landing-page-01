@@ -136,6 +136,7 @@ The regression suite lives in `tests/regression.spec.mjs` and is configured by `
 Viewport projects:
 
 - 320 px mobile
+- 375 px mobile
 - 390 px mobile
 - 768 px tablet
 - 1024 px tablet landscape
@@ -150,6 +151,7 @@ The suite checks:
 - optimized local poster image availability and size budget
 - expected title, copy, link labels, descriptions, and destinations
 - no horizontal overflow at supported viewport widths
+- poster and all three link cards visible in the initial mobile viewport
 - poster, header, and links remain separated without overlap
 - keyboard tab order and visible focus outlines
 - minimum tap target sizing for link cards
@@ -181,8 +183,8 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 The current links are:
 
 - William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
-- Reunion Food: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
-- Misc: `./misc/`
+- Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
+- Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 

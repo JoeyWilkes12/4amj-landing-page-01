@@ -22,15 +22,15 @@ const expectedLinks = [
       "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
   },
   {
-    title: "Reunion Food",
-    description: "Meal plans, food assignments & schedule, and dietary notes.",
-    href:
-      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
+    title: "Reunion Schedule & Food",
+    description: "Schedule overview & food.",
+    href: "https://joeywilkes12.github.io/digital-schedule-website/",
   },
   {
-    title: "Misc",
-    description: "Other reunion resources, announcements, maps, schedules, and shared links.",
-    href: "./misc/",
+    title: "Miscellaneous",
+    description: "Google Drive File Share for downloadable, online viewable content.",
+    href:
+      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
   },
 ];
 
@@ -111,6 +111,10 @@ test.describe("static source contract", () => {
     expect(index).toContain(`alt="${expectedPosterAlt}"`);
     expect(index).toContain('<link rel="stylesheet" href="./styles.css">');
     expect(index).toContain('aria-label="Whiteley reunion resource links"');
+    expect(index).toContain('href="https://joeywilkes12.github.io/digital-schedule-website/"');
+    expect(index).toContain(
+      'aria-label="Reunion Schedule and Food: Schedule overview and food."',
+    );
     expect(index).not.toContain('aria-label="Toggle dark theme"');
     expect(index).not.toContain('id="theme-toggle"');
     expect(index).not.toContain("Update these links as reunion plans change.");
@@ -183,7 +187,7 @@ test.describe("responsive link hub behavior", () => {
     }
   });
 
-  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }) => {
+  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }, testInfo) => {
     const requestedUrls = [];
     page.on("request", (request) => requestedUrls.push(request.url()));
 
@@ -223,11 +227,16 @@ test.describe("responsive link hub behavior", () => {
       });
       const poster = document.querySelector(".poster img").getBoundingClientRect();
       const heading = document.querySelector("h1").getBoundingClientRect();
+      const descriptions = Array.from(document.querySelectorAll(".link-description")).map(
+        (element) => getComputedStyle(element).display,
+      );
 
       return {
         clientWidth: document.documentElement.clientWidth,
+        viewportHeight: window.innerHeight,
         scrollWidth: document.documentElement.scrollWidth,
         viewportWidth,
+        descriptions,
         linkBoxes,
         poster: {
           top: poster.top,
@@ -261,6 +270,14 @@ test.describe("responsive link hub behavior", () => {
 
     for (let index = 1; index < metrics.linkBoxes.length; index += 1) {
       expect(metrics.linkBoxes[index].top).toBeGreaterThan(metrics.linkBoxes[index - 1].bottom);
+    }
+
+    if (testInfo.project.name.startsWith("mobile-")) {
+      const finalLinkBottom = metrics.linkBoxes.at(-1).bottom;
+      expect(Math.ceil(finalLinkBottom)).toBeLessThanOrEqual(metrics.viewportHeight - 8);
+      expect(metrics.descriptions).toEqual(expectedLinks.map(() => "none"));
+    } else {
+      expect(metrics.descriptions.every((display) => display !== "none")).toBe(true);
     }
 
     const unexpectedRequests = requestedUrls.filter(

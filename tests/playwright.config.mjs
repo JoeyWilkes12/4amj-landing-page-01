@@ -30,6 +30,10 @@ const viewportProjects = [
     use: { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true },
   },
   {
+    name: "mobile-375",
+    use: { viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true },
+  },
+  {
     name: "tablet-768",
     use: { viewport: { width: 768, height: 1024 }, isMobile: true, hasTouch: true },
   },
