@@ -190,11 +190,16 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 
 The current links are:
 
-- William Henry Adams & Wife Details: `https://drive.google.com/drive/folders/1eDOODtmtZ2hZ09jEqLjSvALUK85ordVn?usp=drive_link`
-- William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
+- Genealogy: `./genealogy.html`
 - Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
 - Venmo: `./venmo-group.html`
 - Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
+
+The genealogy page links directly to:
+
+- William Henry Adams Senior: `./assets/genealogy/William%20Henry%20Adams%20Life%20History.pdf`
+- Frances Otten Adams: `./assets/genealogy/Life%20History%20of%20Frances%20Otten%20Adams.pdf`
+- Church History Biographical Database of William Henry Adams, Sr.: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 
