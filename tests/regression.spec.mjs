@@ -14,17 +14,15 @@ const expectedPosterAssets = [
   { path: "./assets/whiteley-reunion-poster-1080.webp", width: 1080, height: 720 },
   { path: "./assets/whiteley-reunion-poster-1440.webp", width: 1440, height: 960 },
 ];
+const expectedPdfAssets = [
+  "./assets/William Henry Adams Life History.pdf",
+  "./assets/Life History of Frances Otten Adams.pdf",
+];
 const expectedLinks = [
   {
-    title: "William Henry Adams & Wife Details",
-    description: "Google Doc placeholder for deeper family history notes.",
-    href: "https://docs.google.com/document/d/PLACEHOLDER-WILLIAM-HENRY-ADAMS-DETAILS/edit",
-  },
-  {
-    title: "William Henry Adams",
-    description: "Family history, ancestor records, photos, and stories.",
-    href:
-      "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
+    title: "Genealogy",
+    description: "Life histories and Church History biographical records.",
+    href: "./genealogy.html",
   },
   {
     title: "Reunion Schedule & Food",
@@ -32,15 +30,28 @@ const expectedLinks = [
     href: "https://joeywilkes12.github.io/digital-schedule-website/",
   },
   {
-    title: "Group Venmo",
-    description: "Contribute to shared reunion food expenses.",
-    href: "https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d",
-  },
-  {
     title: "Miscellaneous",
     description: "Google Drive file share for downloadable and viewable resources.",
     href:
       "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
+  },
+];
+const expectedGenealogyLinks = [
+  {
+    title: "William Henry Adams Senior",
+    description: "By Brad C.",
+    href: "./assets/William%20Henry%20Adams%20Life%20History.pdf",
+  },
+  {
+    title: "Frances Otten Adams",
+    description: "By Brad C.",
+    href: "./assets/Life%20History%20of%20Frances%20Otten%20Adams.pdf",
+  },
+  {
+    title: "Church History Biographical Database of William Henry Adams, Sr.",
+    description: "Family history, ancestor records, photos, and stories.",
+    href:
+      "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
   },
 ];
 
@@ -53,6 +64,10 @@ function homeURL(baseURL) {
 }
 
 function assetURL(baseURL, path) {
+  return new URL(path, baseURL).toString();
+}
+
+function pageURL(baseURL, path) {
   return new URL(path, baseURL).toString();
 }
 
@@ -104,6 +119,7 @@ function durationToMs(value) {
 test.describe("static source contract", () => {
   test("keeps the site dependency-free and GitHub Pages-ready", async () => {
     const index = readSiteFile("index.html");
+    const genealogy = readSiteFile("genealogy.html");
     const styles = readSiteFile("styles.css");
     const readme = readSiteFile("README.md");
     const agents = readSiteFile("agents.md");
@@ -120,12 +136,21 @@ test.describe("static source contract", () => {
     expect(index).toContain("assets/whiteley-reunion-poster-1440.webp");
     expect(index).toContain(`alt="${expectedPosterAlt}"`);
     expect(index).toContain('<link rel="stylesheet" href="./styles.css">');
+    expect(index).toContain('href="./genealogy.html"');
     expect(index).toContain('aria-label="Whiteley reunion resource links"');
     expect(index).not.toContain('aria-label="Toggle dark theme"');
     expect(index).not.toContain('id="theme-toggle"');
     expect(index).not.toContain("Update these links as reunion plans change.");
     expect(index).not.toContain("Family Reunion Links");
     expect(index).not.toContain("./genealogy/");
+    expect(index).not.toContain("William Henry Adams & Wife Details");
+
+    expect(genealogy).toContain('<title>Genealogy | Whiteley Reunion 2026 Links</title>');
+    expect(genealogy).toContain('<a class="back-link" href="./">&lt;- All reunion links</a>');
+    expect(genealogy).toContain('aria-label="Genealogy resource links"');
+    expect(genealogy).toContain("William Henry Adams Senior");
+    expect(genealogy).toContain("Frances Otten Adams");
+    expect(genealogy).toContain("Church History Biographical Database of William Henry Adams, Sr.");
 
     const forbiddenRuntimePatterns = [
       /<script\b/i,
@@ -139,6 +164,7 @@ test.describe("static source contract", () => {
 
     for (const pattern of forbiddenRuntimePatterns) {
       expect(index, `index.html should not match ${pattern}`).not.toMatch(pattern);
+      expect(genealogy, `genealogy.html should not match ${pattern}`).not.toMatch(pattern);
       expect(styles, `styles.css should not match ${pattern}`).not.toMatch(pattern);
     }
 
@@ -157,6 +183,12 @@ test.describe("static source contract", () => {
       const assetPath = resolve(siteRoot, asset.path);
       expect(existsSync(assetPath), `${asset.path} should exist`).toBe(true);
       expect(statSync(assetPath).size, `${asset.path} should stay under 150 KB`).toBeLessThan(150 * 1024);
+    }
+
+    for (const asset of expectedPdfAssets) {
+      const assetPath = resolve(siteRoot, asset);
+      expect(existsSync(assetPath), `${asset} should exist`).toBe(true);
+      expect(statSync(assetPath).size, `${asset} should not be empty`).toBeGreaterThan(1024);
     }
   });
 });
@@ -186,10 +218,20 @@ test.describe("responsive link hub behavior", () => {
     expect(stylesheetResponse.status()).toBe(200);
     expect(await stylesheetResponse.text()).toContain("--color-page: #0d2448;");
 
+    const genealogyResponse = await request.get(pageURL(baseURL, "./genealogy.html"));
+    expect(genealogyResponse.status()).toBe(200);
+    expect(await genealogyResponse.text()).toContain("Genealogy | Whiteley Reunion 2026 Links");
+
     for (const asset of expectedPosterAssets) {
       const assetResponse = await request.get(assetURL(baseURL, asset.path));
       expect(assetResponse.status(), `${asset.path} should be served`).toBe(200);
       expect((await assetResponse.body()).length, `${asset.path} should be lightweight`).toBeLessThan(150 * 1024);
+    }
+
+    for (const asset of expectedPdfAssets) {
+      const assetResponse = await request.get(assetURL(baseURL, asset));
+      expect(assetResponse.status(), `${asset} should be served`).toBe(200);
+      expect((await assetResponse.body()).length, `${asset} should not be empty`).toBeGreaterThan(1024);
     }
   });
 
@@ -279,6 +321,58 @@ test.describe("responsive link hub behavior", () => {
     expect(unexpectedRequests).toEqual([]);
     expect(page.consoleErrors).toEqual([]);
     expect(page.pageErrors).toEqual([]);
+  });
+
+  test("renders the genealogy page with direct PDFs and a back link", async ({ page, baseURL }) => {
+    await page.goto(pageURL(baseURL, "./genealogy.html"));
+
+    await expect(page).toHaveTitle("Genealogy | Whiteley Reunion 2026 Links");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Genealogy");
+
+    const backLink = page.getByRole("link", { name: "<- All reunion links" });
+    await expect(backLink).toBeVisible();
+    await expect(backLink).toHaveAttribute("href", "./");
+
+    const nav = page.getByRole("navigation", { name: "Genealogy resource links" });
+    await expect(nav).toBeVisible();
+
+    const links = nav.getByRole("link");
+    await expect(links).toHaveCount(expectedGenealogyLinks.length);
+
+    for (const [index, expectedLink] of expectedGenealogyLinks.entries()) {
+      const link = links.nth(index);
+      await expect(link).toContainText(expectedLink.title);
+      await expect(link).toContainText(expectedLink.description);
+      await expect(link).toHaveAttribute("href", expectedLink.href);
+    }
+
+    const metrics = await page.evaluate(() => {
+      const viewportWidth = window.innerWidth;
+      const linkBoxes = Array.from(document.querySelectorAll(".link-card")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          left: rect.left,
+          height: rect.height,
+        };
+      });
+
+      return {
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth,
+        linkBoxes,
+      };
+    });
+
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
+    for (const box of metrics.linkBoxes) {
+      expect(box.height).toBeGreaterThanOrEqual(48);
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(Math.ceil(box.right)).toBeLessThanOrEqual(metrics.viewportWidth);
+    }
   });
 
   test("uses the navy theme and optimized responsive poster", async ({ page, baseURL }) => {
