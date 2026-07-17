@@ -17,6 +17,7 @@ const expectedPosterAssets = [
 ];
 const venmoGroupUrl =
   "https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d";
+const venmoDeepLinkUrl = "venmo://link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d";
 const venmoSmsUrl =
   "sms:?&body=Whiteley%20Reunion%20Group%20Venmo%3A%20https%3A%2F%2Fvenmo.com%2Flink%2Fgroups%2Flink%2Fc9cc52af-5daa-4ed0-81db-31ab9612f98d";
 const expectedLinks = [
@@ -135,6 +136,7 @@ test.describe("static source contract", () => {
     expect(index).toContain('class="link-icon"');
     expect(index).toContain('href="./venmo-group.html"');
     expect(venmoPage).toContain(venmoGroupUrl);
+    expect(venmoPage).toContain(venmoDeepLinkUrl);
     expect(venmoPage).toContain("sms:?&amp;body=Whiteley%20Reunion%20Group%20Venmo");
     expect(venmoPage).toContain("Text the Venmo link");
     expect(venmoPage).toContain("All reunion links");
@@ -399,11 +401,15 @@ test.describe("responsive link hub behavior", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Group Venmo");
     await expect(page.getByText("Use this page if the direct Venmo group link opens as a blank page from the website.")).toBeVisible();
 
-    await expect(page.getByRole("link", { name: "Open Venmo group" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Open in Venmo app" })).toHaveAttribute(
+      "href",
+      venmoDeepLinkUrl,
+    );
+    await expect(page.getByRole("link", { name: "Open Venmo web link" })).toHaveAttribute(
       "href",
       venmoGroupUrl,
     );
-    await expect(page.getByRole("link", { name: "Open Venmo group" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Open Venmo web link" })).toHaveAttribute(
       "target",
       "_blank",
     );
