@@ -198,7 +198,7 @@ The current links are:
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 
-The Group Venmo card uses a local helper page instead of linking directly to Venmo. The helper page tries the `venmo://link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d` app deep link first, keeps the real Venmo web group link as a fallback, and provides a text-message fallback for mobile users if the browser handoff to Venmo opens a blank page.
+The Group Venmo card uses a local helper page instead of linking directly to Venmo. The helper page tries the `venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` app deep link first, keeps the real `https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` Venmo group link as a fallback, and provides a text-message fallback for mobile users if the browser handoff to Venmo opens a blank page.
 
 ## Editing presentation
 

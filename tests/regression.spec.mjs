@@ -16,10 +16,10 @@ const expectedPosterAssets = [
   { path: "./assets/whiteley-reunion-poster-1440.webp", width: 1440, height: 960 },
 ];
 const venmoGroupUrl =
-  "https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d";
-const venmoDeepLinkUrl = "venmo://link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d";
+  "https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
+const venmoDeepLinkUrl = "venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
 const venmoSmsUrl =
-  "sms:?&body=Whiteley%20Reunion%20Group%20Venmo%3A%20https%3A%2F%2Fvenmo.com%2Flink%2Fgroups%2Flink%2Fc9cc52af-5daa-4ed0-81db-31ab9612f98d";
+  "sms:?&body=Whiteley%20Reunion%20Group%20Venmo%3A%20https%3A%2F%2Flink.venmo.com%2Fgroups%2Flink%2F2838e16e-4031-4ccd-ac34-4581d1673ffd";
 const expectedLinks = [
   {
     title: "William Henry Adams & Wife Details",
