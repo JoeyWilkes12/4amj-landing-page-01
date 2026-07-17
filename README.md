@@ -15,6 +15,7 @@ Published site files:
 ```text
 /
 index.html
+venmo-group.html
 styles.css
 agents.md
 README.md
@@ -192,10 +193,12 @@ The current links are:
 - William Henry Adams & Wife Details: `https://docs.google.com/document/d/PLACEHOLDER-WILLIAM-HENRY-ADAMS-DETAILS/edit`
 - William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
 - Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
-- Group Venmo: `https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d`
+- Group Venmo: `./venmo-group.html`
 - Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
+
+The Group Venmo card uses a local helper page instead of linking directly to Venmo. The helper page keeps the real Venmo group link, adds a prominent app-open button, and provides a text-message fallback for mobile users if the browser handoff to Venmo opens a blank page.
 
 ## Editing presentation
 

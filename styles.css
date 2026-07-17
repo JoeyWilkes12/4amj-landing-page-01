@@ -239,6 +239,131 @@ h1 {
   background: var(--color-accent-strong);
 }
 
+.venmo-helper {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.back-link {
+  width: fit-content;
+  color: var(--color-accent-strong);
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.2em;
+}
+
+.venmo-panel,
+.fallback-panel {
+  color: var(--color-text-dark);
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0.45rem 1.25rem rgba(2, 9, 21, 0.18);
+}
+
+.venmo-panel {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: center;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.venmo-panel .eyebrow {
+  margin: 0;
+  color: var(--color-page);
+}
+
+.venmo-panel h1,
+.venmo-panel .subtitle {
+  color: var(--color-text-dark);
+}
+
+.venmo-panel h1 {
+  font-size: clamp(2rem, 12vw, 3.15rem);
+}
+
+.venmo-panel .subtitle {
+  margin-top: 0;
+}
+
+.venmo-badge {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(13, 36, 72, 0.12);
+  border-radius: 999px;
+  place-items: center;
+}
+
+.venmo-badge img {
+  display: block;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+.venmo-actions {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.action-button {
+  display: grid;
+  min-height: 3.25rem;
+  padding: 0.8rem var(--space-4);
+  color: var(--color-text-dark);
+  text-align: center;
+  text-decoration: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-card-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 0.35rem 1rem rgba(2, 9, 21, 0.14);
+  font-weight: 800;
+  place-items: center;
+}
+
+.action-primary {
+  color: var(--color-page-deep);
+  background: var(--color-accent-strong);
+  border-color: var(--color-accent);
+}
+
+.action-button:focus-visible,
+.back-link:focus-visible,
+.copyable-link:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.fallback-panel {
+  padding: var(--space-4);
+}
+
+.fallback-panel h2 {
+  margin: 0;
+  color: var(--color-text-dark);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-variant-caps: small-caps;
+  line-height: 1.2;
+}
+
+.fallback-panel p {
+  margin: var(--space-3) 0 0;
+  color: var(--color-muted-dark);
+}
+
+.copyable-link {
+  display: block;
+  color: var(--color-page);
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
 @media (min-width: 48rem) {
   .page-shell {
     padding: var(--space-10);
@@ -267,6 +392,18 @@ h1 {
     width: 2rem;
     height: 2rem;
     font-size: 1rem;
+  }
+
+  .venmo-panel {
+    padding: var(--space-8);
+  }
+
+  .venmo-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .fallback-panel {
+    padding: var(--space-6);
   }
 }
 

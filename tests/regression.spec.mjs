@@ -15,6 +15,10 @@ const expectedPosterAssets = [
   { path: "./assets/whiteley-reunion-poster-1080.webp", width: 1080, height: 720 },
   { path: "./assets/whiteley-reunion-poster-1440.webp", width: 1440, height: 960 },
 ];
+const venmoGroupUrl =
+  "https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d";
+const venmoSmsUrl =
+  "sms:?&body=Whiteley%20Reunion%20Group%20Venmo%3A%20https%3A%2F%2Fvenmo.com%2Flink%2Fgroups%2Flink%2Fc9cc52af-5daa-4ed0-81db-31ab9612f98d";
 const expectedLinks = [
   {
     title: "William Henry Adams & Wife Details",
@@ -38,7 +42,7 @@ const expectedLinks = [
   {
     title: "Group Venmo",
     description: "Contribute to shared reunion food expenses.",
-    href: "https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d",
+    href: "./venmo-group.html",
     icon: "./assets/link-icons/venmo-icon.webp",
   },
   {
@@ -110,6 +114,7 @@ function durationToMs(value) {
 test.describe("static source contract", () => {
   test("keeps the site dependency-free and GitHub Pages-ready", async () => {
     const index = readSiteFile("index.html");
+    const venmoPage = readSiteFile("venmo-group.html");
     const styles = readSiteFile("styles.css");
     const readme = readSiteFile("README.md");
     const agents = readSiteFile("agents.md");
@@ -128,6 +133,11 @@ test.describe("static source contract", () => {
     expect(index).toContain('<link rel="stylesheet" href="./styles.css">');
     expect(index).toContain('aria-label="Whiteley reunion resource links"');
     expect(index).toContain('class="link-icon"');
+    expect(index).toContain('href="./venmo-group.html"');
+    expect(venmoPage).toContain(venmoGroupUrl);
+    expect(venmoPage).toContain("sms:?&amp;body=Whiteley%20Reunion%20Group%20Venmo");
+    expect(venmoPage).toContain("Text the Venmo link");
+    expect(venmoPage).toContain("All reunion links");
     expect(index).not.toContain('aria-label="Toggle dark theme"');
     expect(index).not.toContain('id="theme-toggle"');
     expect(index).not.toContain("Update these links as reunion plans change.");
@@ -146,6 +156,7 @@ test.describe("static source contract", () => {
 
     for (const pattern of forbiddenRuntimePatterns) {
       expect(index, `index.html should not match ${pattern}`).not.toMatch(pattern);
+      expect(venmoPage, `venmo-group.html should not match ${pattern}`).not.toMatch(pattern);
       expect(styles, `styles.css should not match ${pattern}`).not.toMatch(pattern);
     }
 
@@ -199,6 +210,10 @@ test.describe("responsive link hub behavior", () => {
     const stylesheetResponse = await request.get(assetURL(baseURL, "./styles.css"));
     expect(stylesheetResponse.status()).toBe(200);
     expect(await stylesheetResponse.text()).toContain("--color-page: #0d2448;");
+
+    const venmoPageResponse = await request.get(assetURL(baseURL, "./venmo-group.html"));
+    expect(venmoPageResponse.status()).toBe(200);
+    expect(await venmoPageResponse.text()).toContain("Group Venmo");
 
     for (const asset of expectedPosterAssets) {
       const assetResponse = await request.get(assetURL(baseURL, asset.path));
@@ -369,6 +384,77 @@ test.describe("responsive link hub behavior", () => {
       mkdirSync(mobileReviewDir, { recursive: true });
       await page.screenshot({
         path: resolve(mobileReviewDir, `${testInfo.project.name}-full-page.png`),
+        fullPage: true,
+      });
+    }
+  });
+
+  test("serves a mobile-first Venmo helper page", async ({ page, baseURL }, testInfo) => {
+    const requestedUrls = [];
+    page.on("request", (request) => requestedUrls.push(request.url()));
+
+    await page.goto(assetURL(baseURL, "./venmo-group.html"));
+
+    await expect(page).toHaveTitle("Group Venmo | Whiteley Reunion 2026 Links");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Group Venmo");
+    await expect(page.getByText("Use this page if the direct Venmo group link opens as a blank page from the website.")).toBeVisible();
+
+    await expect(page.getByRole("link", { name: "Open Venmo group" })).toHaveAttribute(
+      "href",
+      venmoGroupUrl,
+    );
+    await expect(page.getByRole("link", { name: "Open Venmo group" })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    await expect(page.getByRole("link", { name: "Text the Venmo link" })).toHaveAttribute(
+      "href",
+      venmoSmsUrl,
+    );
+    await expect(page.getByRole("link", { name: "All reunion links" })).toHaveAttribute(
+      "href",
+      "./",
+    );
+    await expect(page.locator(".copyable-link")).toHaveText(venmoGroupUrl);
+
+    const metrics = await page.evaluate(() => {
+      const viewportWidth = window.innerWidth;
+      const panels = Array.from(document.querySelectorAll(".venmo-panel, .fallback-panel, .action-button")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          right: rect.right,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+
+      return {
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth,
+        panels,
+      };
+    });
+
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
+    for (const panel of metrics.panels) {
+      expect(panel.height).toBeGreaterThanOrEqual(48);
+      expect(panel.left).toBeGreaterThanOrEqual(0);
+      expect(Math.ceil(panel.right)).toBeLessThanOrEqual(metrics.viewportWidth);
+    }
+
+    const unexpectedRequests = requestedUrls.filter(
+      (url) => !isAllowedRuntimeRequest(url, baseURL),
+    );
+    expect(unexpectedRequests).toEqual([]);
+    expect(page.consoleErrors).toEqual([]);
+    expect(page.pageErrors).toEqual([]);
+
+    if (testInfo.project.name.startsWith("mobile-")) {
+      mkdirSync(mobileReviewDir, { recursive: true });
+      await page.screenshot({
+        path: resolve(mobileReviewDir, `${testInfo.project.name}-venmo-full-page.png`),
         fullPage: true,
       });
     }
