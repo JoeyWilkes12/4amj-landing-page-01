@@ -4,6 +4,10 @@ A small, static link hub for the Whiteley Reunion 2026. It gives family members 
 
 This repository is designed for GitHub Pages, but the site is plain HTML and CSS. There is no framework, package manager, build step, analytics, or external runtime dependency. The page is intentionally lightweight so GitHub Pages can serve the site to 100+ near-simultaneous visitors.
 
+## Preferred version
+
+`v1.2.0-navy` is the preferred production direction for this landing page and should be used as the base for future work. Compared with `v1.3.0`, this branch keeps the simpler navy poster-first design, the current reunion link order, and the regression coverage that matches the intended mobile-first experience. New versions should branch from `v1.2.0-navy` unless there is a specific reason to revive the `v1.3.0` direction.
+
 ## Repository layout
 
 Published site files:
