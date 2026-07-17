@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const testRoot = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(testRoot, "..");
+const mobileReviewDir = resolve(siteRoot, "output/playwright/mobile-review");
 
 const expectedTitle = "Whiteley Reunion 2026 Links";
 const expectedPosterAlt =
@@ -16,21 +17,24 @@ const expectedPosterAssets = [
 ];
 const expectedLinks = [
   {
-    title: "William Henry Adams",
+    title: "Church History Biographical Database of William Henry Adams, Sr.",
     description: "Family history, ancestor records, photos, and stories.",
     href:
       "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
+    icon: "./assets/link-icons/familysearch-tree-icon.svg",
   },
   {
     title: "Reunion Schedule & Food",
     description: "Schedule overview and food details.",
     href: "https://joeywilkes12.github.io/digital-schedule-website/",
+    icon: "./assets/link-icons/reunion-pavilion-icon.webp",
   },
   {
     title: "Miscellaneous",
     description: "Google Drive file share for downloadable and viewable resources.",
     href:
       "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
+    icon: "./assets/link-icons/google-drive-icon.svg",
   },
 ];
 
@@ -111,6 +115,10 @@ test.describe("static source contract", () => {
     expect(index).toContain(`alt="${expectedPosterAlt}"`);
     expect(index).toContain('<link rel="stylesheet" href="./styles.css">');
     expect(index).toContain('aria-label="Whiteley reunion resource links"');
+    expect(index).toContain('class="link-icon"');
+    expect(index).not.toContain('href="./venmo-group.html"');
+    expect(index).not.toContain("Group Venmo");
+    expect(index).not.toContain("William Henry Adams & Wife Details");
     expect(index).not.toContain('aria-label="Toggle dark theme"');
     expect(index).not.toContain('id="theme-toggle"');
     expect(index).not.toContain("Update these links as reunion plans change.");
@@ -148,6 +156,13 @@ test.describe("static source contract", () => {
       expect(existsSync(assetPath), `${asset.path} should exist`).toBe(true);
       expect(statSync(assetPath).size, `${asset.path} should stay under 150 KB`).toBeLessThan(150 * 1024);
     }
+
+    for (const link of expectedLinks) {
+      const iconPath = resolve(siteRoot, link.icon);
+      expect(existsSync(iconPath), `${link.icon} should exist`).toBe(true);
+      expect(statSync(iconPath).size, `${link.icon} should stay lightweight`).toBeLessThan(25 * 1024);
+      expect(index).toContain(`src="${link.icon}"`);
+    }
   });
 });
 
@@ -183,7 +198,7 @@ test.describe("responsive link hub behavior", () => {
     }
   });
 
-  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }) => {
+  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }, testInfo) => {
     const requestedUrls = [];
     page.on("request", (request) => requestedUrls.push(request.url()));
 
@@ -206,6 +221,8 @@ test.describe("responsive link hub behavior", () => {
       await expect(link).toContainText(expectedLink.title);
       await expect(link).toContainText(expectedLink.description);
       await expect(link).toHaveAttribute("href", expectedLink.href);
+      await expect(link.locator(".link-icon img")).toHaveAttribute("src", expectedLink.icon);
+      await expect(link.locator(".link-icon img")).toHaveAttribute("alt", "");
     }
 
     const metrics = await page.evaluate(() => {
@@ -221,6 +238,53 @@ test.describe("responsive link hub behavior", () => {
           height: rect.height,
         };
       });
+      const iconBoxes = Array.from(document.querySelectorAll(".link-icon")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+      const cardLayouts = Array.from(document.querySelectorAll(".link-card")).map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const iconRect = card.querySelector(".link-icon").getBoundingClientRect();
+        const copyRect = card.querySelector(".link-copy").getBoundingClientRect();
+        const arrowRect = card.querySelector(".link-arrow").getBoundingClientRect();
+        return {
+          card: {
+            top: cardRect.top,
+            right: cardRect.right,
+            bottom: cardRect.bottom,
+            left: cardRect.left,
+          },
+          icon: {
+            top: iconRect.top,
+            right: iconRect.right,
+            bottom: iconRect.bottom,
+            left: iconRect.left,
+            width: iconRect.width,
+            height: iconRect.height,
+          },
+          copy: {
+            top: copyRect.top,
+            right: copyRect.right,
+            bottom: copyRect.bottom,
+            left: copyRect.left,
+          },
+          arrow: {
+            top: arrowRect.top,
+            right: arrowRect.right,
+            bottom: arrowRect.bottom,
+            left: arrowRect.left,
+            width: arrowRect.width,
+            height: arrowRect.height,
+          },
+        };
+      });
       const poster = document.querySelector(".poster img").getBoundingClientRect();
       const heading = document.querySelector("h1").getBoundingClientRect();
 
@@ -229,6 +293,8 @@ test.describe("responsive link hub behavior", () => {
         scrollWidth: document.documentElement.scrollWidth,
         viewportWidth,
         linkBoxes,
+        iconBoxes,
+        cardLayouts,
         poster: {
           top: poster.top,
           right: poster.right,
@@ -259,6 +325,25 @@ test.describe("responsive link hub behavior", () => {
       expect(Math.ceil(box.right)).toBeLessThanOrEqual(metrics.viewportWidth);
     }
 
+    expect(metrics.iconBoxes).toHaveLength(expectedLinks.length);
+    for (const box of metrics.iconBoxes) {
+      expect(box.width).toBeGreaterThanOrEqual(32);
+      expect(box.width).toBeLessThanOrEqual(56);
+      expect(box.height).toBe(box.width);
+    }
+
+    expect(metrics.cardLayouts).toHaveLength(expectedLinks.length);
+    for (const layout of metrics.cardLayouts) {
+      expect(layout.icon.left).toBeGreaterThanOrEqual(layout.card.left);
+      expect(layout.icon.top).toBeGreaterThanOrEqual(layout.card.top);
+      expect(layout.icon.bottom).toBeLessThanOrEqual(layout.card.bottom);
+      expect(Math.ceil(layout.icon.right)).toBeLessThanOrEqual(Math.floor(layout.copy.left));
+      expect(Math.ceil(layout.copy.right)).toBeLessThanOrEqual(Math.floor(layout.arrow.left));
+      expect(Math.ceil(layout.arrow.right)).toBeLessThanOrEqual(Math.ceil(layout.card.right));
+      expect(layout.arrow.width).toBeLessThanOrEqual(36);
+      expect(layout.arrow.height).toBe(layout.arrow.width);
+    }
+
     for (let index = 1; index < metrics.linkBoxes.length; index += 1) {
       expect(metrics.linkBoxes[index].top).toBeGreaterThan(metrics.linkBoxes[index - 1].bottom);
     }
@@ -269,6 +354,14 @@ test.describe("responsive link hub behavior", () => {
     expect(unexpectedRequests).toEqual([]);
     expect(page.consoleErrors).toEqual([]);
     expect(page.pageErrors).toEqual([]);
+
+    if (testInfo.project.name.startsWith("mobile-")) {
+      mkdirSync(mobileReviewDir, { recursive: true });
+      await page.screenshot({
+        path: resolve(mobileReviewDir, `${testInfo.project.name}-full-page.png`),
+        fullPage: true,
+      });
+    }
   });
 
   test("uses the navy theme and optimized responsive poster", async ({ page, baseURL }) => {
