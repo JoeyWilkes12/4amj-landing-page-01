@@ -16,6 +16,11 @@ const expectedPosterAssets = [
 ];
 const expectedLinks = [
   {
+    title: "William Henry Adams & Wife Details",
+    description: "Google Doc placeholder for deeper family history notes.",
+    href: "https://docs.google.com/document/d/PLACEHOLDER-WILLIAM-HENRY-ADAMS-DETAILS/edit",
+  },
+  {
     title: "William Henry Adams",
     description: "Family history, ancestor records, photos, and stories.",
     href:
@@ -25,6 +30,11 @@ const expectedLinks = [
     title: "Reunion Schedule & Food",
     description: "Schedule overview and food details.",
     href: "https://joeywilkes12.github.io/digital-schedule-website/",
+  },
+  {
+    title: "Group Venmo",
+    description: "Contribute to shared reunion food expenses.",
+    href: "https://venmo.com/link/groups/link/c9cc52af-5daa-4ed0-81db-31ab9612f98d",
   },
   {
     title: "Miscellaneous",
