@@ -33,6 +33,7 @@ Regression test files:
 ```
 
 Generated test output is written under `.test-results/`, which is ignored by Git.
+Mobile review screenshots from the regression suite are written under `output/playwright/mobile-review/`, which is also ignored by Git.
 
 ## Developer prerequisites
 
@@ -85,6 +86,7 @@ That command:
 - starts a local Python static server on `127.0.0.1:4173`
 - runs the Playwright suite across mobile, tablet, and desktop viewport projects
 - writes HTML reports, traces, screenshots, and videos under `.test-results/`
+- writes full-page 320 px and 390 px mobile review screenshots under `output/playwright/mobile-review/`
 
 Run a specific test layer:
 
@@ -131,6 +133,7 @@ If a test fails, inspect:
 ```text
 .test-results/playwright-report/
 .test-results/artifacts/
+output/playwright/mobile-review/
 ```
 
 The HTML report is generated with `open: "never"`, so it will not automatically launch a browser.

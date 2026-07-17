@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const testRoot = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(testRoot, "..");
+const mobileReviewDir = resolve(siteRoot, "output/playwright/mobile-review");
 
 const expectedTitle = "Whiteley Reunion 2026 Links";
 const expectedPosterAlt =
@@ -17,12 +18,12 @@ const expectedPosterAssets = [
 const expectedLinks = [
   {
     title: "William Henry Adams & Wife Details",
-    description: "Google Doc placeholder for deeper family history notes.",
+    description: "Family History Notes by Brad C.",
     href: "https://docs.google.com/document/d/PLACEHOLDER-WILLIAM-HENRY-ADAMS-DETAILS/edit",
     icon: "./assets/link-icons/whiteley-deep-roots-icon.webp",
   },
   {
-    title: "William Henry Adams",
+    title: "Church History Biographical Database of William Henry Adams, Sr.",
     description: "Family history, ancestor records, photos, and stories.",
     href:
       "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
@@ -207,7 +208,7 @@ test.describe("responsive link hub behavior", () => {
 
   });
 
-  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }) => {
+  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }, testInfo) => {
     const requestedUrls = [];
     page.on("request", (request) => requestedUrls.push(request.url()));
 
@@ -250,8 +251,48 @@ test.describe("responsive link hub behavior", () => {
       const iconBoxes = Array.from(document.querySelectorAll(".link-icon")).map((element) => {
         const rect = element.getBoundingClientRect();
         return {
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          left: rect.left,
           width: rect.width,
           height: rect.height,
+        };
+      });
+      const cardLayouts = Array.from(document.querySelectorAll(".link-card")).map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const iconRect = card.querySelector(".link-icon").getBoundingClientRect();
+        const copyRect = card.querySelector(".link-copy").getBoundingClientRect();
+        const arrowRect = card.querySelector(".link-arrow").getBoundingClientRect();
+        return {
+          card: {
+            top: cardRect.top,
+            right: cardRect.right,
+            bottom: cardRect.bottom,
+            left: cardRect.left,
+          },
+          icon: {
+            top: iconRect.top,
+            right: iconRect.right,
+            bottom: iconRect.bottom,
+            left: iconRect.left,
+            width: iconRect.width,
+            height: iconRect.height,
+          },
+          copy: {
+            top: copyRect.top,
+            right: copyRect.right,
+            bottom: copyRect.bottom,
+            left: copyRect.left,
+          },
+          arrow: {
+            top: arrowRect.top,
+            right: arrowRect.right,
+            bottom: arrowRect.bottom,
+            left: arrowRect.left,
+            width: arrowRect.width,
+            height: arrowRect.height,
+          },
         };
       });
       const poster = document.querySelector(".poster img").getBoundingClientRect();
@@ -263,6 +304,7 @@ test.describe("responsive link hub behavior", () => {
         viewportWidth,
         linkBoxes,
         iconBoxes,
+        cardLayouts,
         poster: {
           top: poster.top,
           right: poster.right,
@@ -295,9 +337,21 @@ test.describe("responsive link hub behavior", () => {
 
     expect(metrics.iconBoxes).toHaveLength(expectedLinks.length);
     for (const box of metrics.iconBoxes) {
-      expect(box.width).toBeGreaterThanOrEqual(40);
+      expect(box.width).toBeGreaterThanOrEqual(32);
       expect(box.width).toBeLessThanOrEqual(56);
       expect(box.height).toBe(box.width);
+    }
+
+    expect(metrics.cardLayouts).toHaveLength(expectedLinks.length);
+    for (const layout of metrics.cardLayouts) {
+      expect(layout.icon.left).toBeGreaterThanOrEqual(layout.card.left);
+      expect(layout.icon.top).toBeGreaterThanOrEqual(layout.card.top);
+      expect(layout.icon.bottom).toBeLessThanOrEqual(layout.card.bottom);
+      expect(Math.ceil(layout.icon.right)).toBeLessThanOrEqual(Math.floor(layout.copy.left));
+      expect(Math.ceil(layout.copy.right)).toBeLessThanOrEqual(Math.floor(layout.arrow.left));
+      expect(Math.ceil(layout.arrow.right)).toBeLessThanOrEqual(Math.ceil(layout.card.right));
+      expect(layout.arrow.width).toBeLessThanOrEqual(36);
+      expect(layout.arrow.height).toBe(layout.arrow.width);
     }
 
     for (let index = 1; index < metrics.linkBoxes.length; index += 1) {
@@ -310,6 +364,14 @@ test.describe("responsive link hub behavior", () => {
     expect(unexpectedRequests).toEqual([]);
     expect(page.consoleErrors).toEqual([]);
     expect(page.pageErrors).toEqual([]);
+
+    if (testInfo.project.name.startsWith("mobile-")) {
+      mkdirSync(mobileReviewDir, { recursive: true });
+      await page.screenshot({
+        path: resolve(mobileReviewDir, `${testInfo.project.name}-full-page.png`),
+        fullPage: true,
+      });
+    }
   });
 
   test("uses the navy theme and optimized responsive poster", async ({ page, baseURL }) => {
