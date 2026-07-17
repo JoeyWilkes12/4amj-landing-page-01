@@ -190,15 +190,15 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 
 The current links are:
 
-- William Henry Adams & Wife Details: `https://docs.google.com/document/d/PLACEHOLDER-WILLIAM-HENRY-ADAMS-DETAILS/edit`
+- William Henry Adams & Wife Details: `https://drive.google.com/drive/folders/1eDOODtmtZ2hZ09jEqLjSvALUK85ordVn?usp=drive_link`
 - William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
 - Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
-- Group Venmo: `./venmo-group.html`
+- Venmo: `./venmo-group.html`
 - Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 
-The Group Venmo card uses a local helper page instead of linking directly to Venmo. The helper page tries the `venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` app deep link first, keeps the real `https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` Venmo group link as a fallback, and provides a text-message fallback for mobile users if the browser handoff to Venmo opens a blank page.
+The Venmo card uses a local helper page instead of linking directly to Venmo. The helper page starts with Cherie Journee's Venmo QR code for direct payment, then tries the `venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` app deep link, keeps the real `https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` Venmo group link as a fallback, and provides a text-message fallback for mobile users if the browser handoff to Venmo opens a blank page.
 
 ## Editing presentation
 

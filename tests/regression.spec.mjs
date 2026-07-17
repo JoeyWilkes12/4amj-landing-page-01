@@ -15,6 +15,10 @@ const expectedPosterAssets = [
   { path: "./assets/whiteley-reunion-poster-1080.webp", width: 1080, height: 720 },
   { path: "./assets/whiteley-reunion-poster-1440.webp", width: 1440, height: 960 },
 ];
+const cherieVenmoQrAsset = {
+  path: "./assets/Cherie Journee QR Venmo.jpeg",
+  src: "./assets/Cherie%20Journee%20QR%20Venmo.jpeg",
+};
 const venmoGroupUrl =
   "https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
 const venmoDeepLinkUrl = "venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
@@ -24,7 +28,7 @@ const expectedLinks = [
   {
     title: "William Henry Adams & Wife Details",
     description: "Family History Notes by Brad C.",
-    href: "https://docs.google.com/document/d/PLACEHOLDER-WILLIAM-HENRY-ADAMS-DETAILS/edit",
+    href: "https://drive.google.com/drive/folders/1eDOODtmtZ2hZ09jEqLjSvALUK85ordVn?usp=drive_link",
     icon: "./assets/link-icons/whiteley-deep-roots-icon.webp",
   },
   {
@@ -41,8 +45,8 @@ const expectedLinks = [
     icon: "./assets/link-icons/reunion-pavilion-icon.webp",
   },
   {
-    title: "Group Venmo",
-    description: "Contribute to shared reunion food expenses.",
+    title: "Venmo",
+    description: "Contribute to shared reunion expenses like food.",
     href: "./venmo-group.html",
     icon: "./assets/link-icons/venmo-icon.webp",
   },
@@ -137,6 +141,8 @@ test.describe("static source contract", () => {
     expect(index).toContain('href="./venmo-group.html"');
     expect(venmoPage).toContain(venmoGroupUrl);
     expect(venmoPage).toContain(venmoDeepLinkUrl);
+    expect(venmoPage).toContain(cherieVenmoQrAsset.src);
+    expect(venmoPage).toContain("alt=\"Venmo QR code for Cherie Journee.\"");
     expect(venmoPage).toContain("sms:?&amp;body=Whiteley%20Reunion%20Group%20Venmo");
     expect(venmoPage).toContain("Text the Venmo link");
     expect(venmoPage).toContain("All reunion links");
@@ -178,6 +184,10 @@ test.describe("static source contract", () => {
       expect(existsSync(assetPath), `${asset.path} should exist`).toBe(true);
       expect(statSync(assetPath).size, `${asset.path} should stay under 150 KB`).toBeLessThan(150 * 1024);
     }
+
+    const qrAssetPath = resolve(siteRoot, cherieVenmoQrAsset.path);
+    expect(existsSync(qrAssetPath), `${cherieVenmoQrAsset.path} should exist`).toBe(true);
+    expect(statSync(qrAssetPath).size, `${cherieVenmoQrAsset.path} should stay lightweight`).toBeLessThan(300 * 1024);
 
     for (const link of expectedLinks) {
       const iconPath = resolve(siteRoot, link.icon);
@@ -222,6 +232,10 @@ test.describe("responsive link hub behavior", () => {
       expect(assetResponse.status(), `${asset.path} should be served`).toBe(200);
       expect((await assetResponse.body()).length, `${asset.path} should be lightweight`).toBeLessThan(150 * 1024);
     }
+
+    const qrResponse = await request.get(assetURL(baseURL, cherieVenmoQrAsset.path));
+    expect(qrResponse.status(), `${cherieVenmoQrAsset.path} should be served`).toBe(200);
+    expect((await qrResponse.body()).length, `${cherieVenmoQrAsset.path} should be lightweight`).toBeLessThan(300 * 1024);
 
   });
 
@@ -398,8 +412,9 @@ test.describe("responsive link hub behavior", () => {
     await page.goto(assetURL(baseURL, "./venmo-group.html"));
 
     await expect(page).toHaveTitle("Group Venmo | Whiteley Reunion 2026 Links");
+    await expect(page.getByAltText("Venmo QR code for Cherie Journee.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Group Venmo");
-    await expect(page.getByText("Use this page if the direct Venmo group link opens as a blank page from the website.")).toBeVisible();
+    await expect(page.getByText("Sending Venmo directly to Cherie Journee may be the most reliable method")).toBeVisible();
 
     await expect(page.getByRole("link", { name: "Open in Venmo app" })).toHaveAttribute(
       "href",
@@ -425,7 +440,7 @@ test.describe("responsive link hub behavior", () => {
 
     const metrics = await page.evaluate(() => {
       const viewportWidth = window.innerWidth;
-      const panels = Array.from(document.querySelectorAll(".venmo-panel, .fallback-panel, .action-button")).map((element) => {
+      const panels = Array.from(document.querySelectorAll(".venmo-panel, .fallback-panel, .action-button, .venmo-qr img")).map((element) => {
         const rect = element.getBoundingClientRect();
         return {
           right: rect.right,
