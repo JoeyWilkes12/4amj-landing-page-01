@@ -8,6 +8,7 @@ const resultsRoot = resolve(siteRoot, ".test-results");
 const port = Number(process.env.REGRESSION_PORT || 4173);
 const localBaseURL = `http://127.0.0.1:${port}/`;
 const configuredBaseURL = process.env.REGRESSION_BASE_URL;
+const workers = Number(process.env.PLAYWRIGHT_WORKERS || 2);
 
 function normalizeBaseURL(value) {
   const url = new URL(value);
@@ -50,6 +51,7 @@ const viewportProjects = [
 export default defineConfig({
   testDir: testRoot,
   fullyParallel: true,
+  workers,
   timeout: 30_000,
   expect: { timeout: 5_000 },
   retries: process.env.CI ? 1 : 0,

@@ -15,11 +15,13 @@ Published site files:
 ```text
 /
 index.html
+venmo-group.html
 styles.css
 agents.md
 README.md
 .nojekyll
 assets/
+assets/link-icons/
 ```
 
 Regression test files:
@@ -32,6 +34,7 @@ Regression test files:
 ```
 
 Generated test output is written under `.test-results/`, which is ignored by Git.
+Mobile review screenshots from the regression suite are written under `output/playwright/mobile-review/`, which is also ignored by Git.
 
 ## Developer prerequisites
 
@@ -84,6 +87,7 @@ That command:
 - starts a local Python static server on `127.0.0.1:4173`
 - runs the Playwright suite across mobile, tablet, and desktop viewport projects
 - writes HTML reports, traces, screenshots, and videos under `.test-results/`
+- writes full-page 320 px and 390 px mobile review screenshots under `output/playwright/mobile-review/`
 
 Run a specific test layer:
 
@@ -120,6 +124,7 @@ REGRESSION_PORT                  Override the local server port. Default: 4173.
 LIVE_BASE_URL                    Override the live deployment URL.
 PLAYWRIGHT_TEST_VERSION          Override the pinned Playwright Test version. Default: 1.61.1.
 PLAYWRIGHT_INSTALL_BROWSERS=skip Skip Playwright's Chromium install step.
+PLAYWRIGHT_WORKERS               Override parallel test workers. Default: 2.
 PLAYWRIGHT_HTML_OPEN             Controls the Playwright HTML report auto-open behavior. Default: never.
 CI=1                             Enables one retry through Playwright config.
 ```
@@ -129,6 +134,7 @@ If a test fails, inspect:
 ```text
 .test-results/playwright-report/
 .test-results/artifacts/
+output/playwright/mobile-review/
 ```
 
 The HTML report is generated with `open: "never"`, so it will not automatically launch a browser.
@@ -184,11 +190,20 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 
 The current links are:
 
-- William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
+- Genealogy: `./genealogy.html`
 - Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
+- Venmo: `./venmo-group.html`
 - Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 
+The genealogy page links directly to:
+
+- William Henry Adams Senior: `https://drive.google.com/file/d/1S6Mpq4j3gMpkC1QICSsINpfRJWw7wg8d/view?usp=drive_link`
+- Frances Otten Adams: `https://drive.google.com/file/d/1tlhBKfo9_e3FS_pC4RoFGqbO4oUEbagy/view?usp=drive_link`
+- Church History Biographical Database of William Henry Adams, Sr.: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
+
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
+
+The Venmo card uses a local helper page instead of linking directly to Venmo. The helper page starts with Cherie Journee's Venmo QR code for direct payment, then tries the `venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` app deep link, keeps the real `https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd` Venmo group link as a fallback, and provides a text-message fallback for mobile users if the browser handoff to Venmo opens a blank page.
 
 ## Editing presentation
 
@@ -204,6 +219,8 @@ The page uses a navy-only theme matched to the poster background. The display te
 ## Editing images
 
 Poster assets live in `assets/` as responsive WebP files. Keep committed image files lightweight, prefer multiple responsive sizes through `srcset`, and avoid committing original multi-megabyte source files.
+
+Link card icons live in `assets/link-icons/`. Keep each displayed icon under 25 KB and use the fixed circular icon frame in `styles.css` so every link displays with consistent dimensions.
 
 The current poster derivatives are:
 

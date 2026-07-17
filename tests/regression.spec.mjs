@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { existsSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const testRoot = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(testRoot, "..");
+const mobileReviewDir = resolve(siteRoot, "output/playwright/mobile-review");
 
 const expectedTitle = "Whiteley Reunion 2026 Links";
 const expectedPosterAlt =
@@ -14,23 +15,65 @@ const expectedPosterAssets = [
   { path: "./assets/whiteley-reunion-poster-1080.webp", width: 1080, height: 720 },
   { path: "./assets/whiteley-reunion-poster-1440.webp", width: 1440, height: 960 },
 ];
+const cherieVenmoQrAsset = {
+  path: "./assets/Cherie Journee QR Venmo.jpeg",
+  src: "./assets/Cherie%20Journee%20QR%20Venmo.jpeg",
+};
+const forbiddenGenealogyPdfAssets = [
+  "./assets/genealogy/William Henry Adams Life History.pdf",
+  "./assets/genealogy/Life History of Frances Otten Adams.pdf",
+];
+const venmoGroupUrl =
+  "https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
+const venmoDeepLinkUrl = "venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
+const venmoSmsUrl =
+  "sms:?&body=Whiteley%20Reunion%20Group%20Venmo%3A%20https%3A%2F%2Flink.venmo.com%2Fgroups%2Flink%2F2838e16e-4031-4ccd-ac34-4581d1673ffd";
 const expectedLinks = [
   {
-    title: "William Henry Adams",
-    description: "Family history, ancestor records, photos, and stories.",
-    href:
-      "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
+    title: "Genealogy",
+    description: "Life histories and Church History biographical records.",
+    href: "./genealogy.html",
+    icon: "./assets/link-icons/whiteley-deep-roots-icon.webp",
   },
   {
     title: "Reunion Schedule & Food",
     description: "Schedule overview and food details.",
     href: "https://joeywilkes12.github.io/digital-schedule-website/",
+    icon: "./assets/link-icons/reunion-pavilion-icon.webp",
+  },
+  {
+    title: "Venmo",
+    description: "Contribute to shared reunion expenses like food.",
+    href: "./venmo-group.html",
+    icon: "./assets/link-icons/venmo-icon.webp",
   },
   {
     title: "Miscellaneous",
     description: "Google Drive file share for downloadable and viewable resources.",
     href:
       "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
+    icon: "./assets/link-icons/google-drive-icon.svg",
+  },
+];
+const expectedGenealogyLinks = [
+  {
+    title: "William Henry Adams Senior",
+    description: "By Brad C.",
+    href: "https://drive.google.com/file/d/1S6Mpq4j3gMpkC1QICSsINpfRJWw7wg8d/view?usp=drive_link",
+    icon: "./assets/genealogy/Adams_William%20Henry%20KWJ5-42R.jpg",
+  },
+  {
+    title: "Frances Otten Adams",
+    description: "By Brad C.",
+    href: "https://drive.google.com/file/d/1tlhBKfo9_e3FS_pC4RoFGqbO4oUEbagy/view?usp=drive_link",
+    icon: "./assets/genealogy/Frances%20Otten%20Adams.jpg",
+  },
+  {
+    title: "Church History Biographical Database of William Henry Adams, Sr.",
+    description: "Family history, ancestor records, photos, and stories.",
+    href:
+      "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
+    icon: "./assets/link-icons/familysearch-tree-icon.svg",
   },
 ];
 
@@ -94,6 +137,8 @@ function durationToMs(value) {
 test.describe("static source contract", () => {
   test("keeps the site dependency-free and GitHub Pages-ready", async () => {
     const index = readSiteFile("index.html");
+    const venmoPage = readSiteFile("venmo-group.html");
+    const genealogyPage = readSiteFile("genealogy.html");
     const styles = readSiteFile("styles.css");
     const readme = readSiteFile("README.md");
     const agents = readSiteFile("agents.md");
@@ -111,6 +156,23 @@ test.describe("static source contract", () => {
     expect(index).toContain(`alt="${expectedPosterAlt}"`);
     expect(index).toContain('<link rel="stylesheet" href="./styles.css">');
     expect(index).toContain('aria-label="Whiteley reunion resource links"');
+    expect(index).toContain('class="link-icon"');
+    expect(index).toContain('href="./venmo-group.html"');
+    expect(index).toContain('href="./genealogy.html"');
+    expect(index).not.toContain("William Henry Adams & Wife Details");
+    expect(venmoPage).toContain(venmoGroupUrl);
+    expect(venmoPage).toContain(venmoDeepLinkUrl);
+    expect(venmoPage).toContain(cherieVenmoQrAsset.src);
+    expect(venmoPage).toContain("alt=\"Venmo QR code for Cherie Journee.\"");
+    expect(venmoPage).toContain("sms:?&amp;body=Whiteley%20Reunion%20Group%20Venmo");
+    expect(venmoPage).toContain("Text the Venmo link");
+    expect(venmoPage).toContain("All reunion links");
+    expect(genealogyPage).toContain('<title>Genealogy | Whiteley Reunion 2026 Links</title>');
+    expect(genealogyPage).toContain('<a class="back-link" href="./">&lt;- All reunion links</a>');
+    expect(genealogyPage).toContain('aria-label="Genealogy resource links"');
+    expect(genealogyPage).toContain("William Henry Adams Senior");
+    expect(genealogyPage).toContain("Frances Otten Adams");
+    expect(genealogyPage).toContain("Church History Biographical Database of William Henry Adams, Sr.");
     expect(index).not.toContain('aria-label="Toggle dark theme"');
     expect(index).not.toContain('id="theme-toggle"');
     expect(index).not.toContain("Update these links as reunion plans change.");
@@ -129,6 +191,8 @@ test.describe("static source contract", () => {
 
     for (const pattern of forbiddenRuntimePatterns) {
       expect(index, `index.html should not match ${pattern}`).not.toMatch(pattern);
+      expect(venmoPage, `venmo-group.html should not match ${pattern}`).not.toMatch(pattern);
+      expect(genealogyPage, `genealogy.html should not match ${pattern}`).not.toMatch(pattern);
       expect(styles, `styles.css should not match ${pattern}`).not.toMatch(pattern);
     }
 
@@ -147,6 +211,29 @@ test.describe("static source contract", () => {
       const assetPath = resolve(siteRoot, asset.path);
       expect(existsSync(assetPath), `${asset.path} should exist`).toBe(true);
       expect(statSync(assetPath).size, `${asset.path} should stay under 150 KB`).toBeLessThan(150 * 1024);
+    }
+
+    const qrAssetPath = resolve(siteRoot, cherieVenmoQrAsset.path);
+    expect(existsSync(qrAssetPath), `${cherieVenmoQrAsset.path} should exist`).toBe(true);
+    expect(statSync(qrAssetPath).size, `${cherieVenmoQrAsset.path} should stay lightweight`).toBeLessThan(300 * 1024);
+
+    for (const link of expectedLinks) {
+      const iconPath = resolve(siteRoot, link.icon);
+      expect(existsSync(iconPath), `${link.icon} should exist`).toBe(true);
+      expect(statSync(iconPath).size, `${link.icon} should stay lightweight`).toBeLessThan(25 * 1024);
+      expect(index).toContain(`src="${link.icon}"`);
+    }
+
+    for (const asset of forbiddenGenealogyPdfAssets) {
+      const assetPath = resolve(siteRoot, asset);
+      expect(existsSync(assetPath), `${asset} should not be committed`).toBe(false);
+    }
+
+    for (const link of expectedGenealogyLinks) {
+      const iconPath = resolve(siteRoot, decodeURIComponent(link.icon));
+      expect(existsSync(iconPath), `${link.icon} should exist`).toBe(true);
+      expect(statSync(iconPath).size, `${link.icon} should stay lightweight`).toBeLessThan(25 * 1024);
+      expect(genealogyPage).toContain(`src="${link.icon}"`);
     }
   });
 });
@@ -176,14 +263,32 @@ test.describe("responsive link hub behavior", () => {
     expect(stylesheetResponse.status()).toBe(200);
     expect(await stylesheetResponse.text()).toContain("--color-page: #0d2448;");
 
+    const venmoPageResponse = await request.get(assetURL(baseURL, "./venmo-group.html"));
+    expect(venmoPageResponse.status()).toBe(200);
+    expect(await venmoPageResponse.text()).toContain("Group Venmo");
+
+    const genealogyPageResponse = await request.get(assetURL(baseURL, "./genealogy.html"));
+    expect(genealogyPageResponse.status()).toBe(200);
+    expect(await genealogyPageResponse.text()).toContain("Genealogy | Whiteley Reunion 2026 Links");
+
     for (const asset of expectedPosterAssets) {
       const assetResponse = await request.get(assetURL(baseURL, asset.path));
       expect(assetResponse.status(), `${asset.path} should be served`).toBe(200);
       expect((await assetResponse.body()).length, `${asset.path} should be lightweight`).toBeLessThan(150 * 1024);
     }
+
+    const qrResponse = await request.get(assetURL(baseURL, cherieVenmoQrAsset.path));
+    expect(qrResponse.status(), `${cherieVenmoQrAsset.path} should be served`).toBe(200);
+    expect((await qrResponse.body()).length, `${cherieVenmoQrAsset.path} should be lightweight`).toBeLessThan(300 * 1024);
+
+    for (const link of expectedGenealogyLinks) {
+      const iconResponse = await request.get(assetURL(baseURL, link.icon));
+      expect(iconResponse.status(), `${link.icon} should be served`).toBe(200);
+      expect((await iconResponse.body()).length, `${link.icon} should be lightweight`).toBeLessThan(25 * 1024);
+    }
   });
 
-  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }) => {
+  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }, testInfo) => {
     const requestedUrls = [];
     page.on("request", (request) => requestedUrls.push(request.url()));
 
@@ -206,6 +311,8 @@ test.describe("responsive link hub behavior", () => {
       await expect(link).toContainText(expectedLink.title);
       await expect(link).toContainText(expectedLink.description);
       await expect(link).toHaveAttribute("href", expectedLink.href);
+      await expect(link.locator(".link-icon img")).toHaveAttribute("src", expectedLink.icon);
+      await expect(link.locator(".link-icon img")).toHaveAttribute("alt", "");
     }
 
     const metrics = await page.evaluate(() => {
@@ -221,6 +328,53 @@ test.describe("responsive link hub behavior", () => {
           height: rect.height,
         };
       });
+      const iconBoxes = Array.from(document.querySelectorAll(".link-icon")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+      const cardLayouts = Array.from(document.querySelectorAll(".link-card")).map((card) => {
+        const cardRect = card.getBoundingClientRect();
+        const iconRect = card.querySelector(".link-icon").getBoundingClientRect();
+        const copyRect = card.querySelector(".link-copy").getBoundingClientRect();
+        const arrowRect = card.querySelector(".link-arrow").getBoundingClientRect();
+        return {
+          card: {
+            top: cardRect.top,
+            right: cardRect.right,
+            bottom: cardRect.bottom,
+            left: cardRect.left,
+          },
+          icon: {
+            top: iconRect.top,
+            right: iconRect.right,
+            bottom: iconRect.bottom,
+            left: iconRect.left,
+            width: iconRect.width,
+            height: iconRect.height,
+          },
+          copy: {
+            top: copyRect.top,
+            right: copyRect.right,
+            bottom: copyRect.bottom,
+            left: copyRect.left,
+          },
+          arrow: {
+            top: arrowRect.top,
+            right: arrowRect.right,
+            bottom: arrowRect.bottom,
+            left: arrowRect.left,
+            width: arrowRect.width,
+            height: arrowRect.height,
+          },
+        };
+      });
       const poster = document.querySelector(".poster img").getBoundingClientRect();
       const heading = document.querySelector("h1").getBoundingClientRect();
 
@@ -229,6 +383,8 @@ test.describe("responsive link hub behavior", () => {
         scrollWidth: document.documentElement.scrollWidth,
         viewportWidth,
         linkBoxes,
+        iconBoxes,
+        cardLayouts,
         poster: {
           top: poster.top,
           right: poster.right,
@@ -259,6 +415,25 @@ test.describe("responsive link hub behavior", () => {
       expect(Math.ceil(box.right)).toBeLessThanOrEqual(metrics.viewportWidth);
     }
 
+    expect(metrics.iconBoxes).toHaveLength(expectedLinks.length);
+    for (const box of metrics.iconBoxes) {
+      expect(box.width).toBeGreaterThanOrEqual(32);
+      expect(box.width).toBeLessThanOrEqual(56);
+      expect(box.height).toBe(box.width);
+    }
+
+    expect(metrics.cardLayouts).toHaveLength(expectedLinks.length);
+    for (const layout of metrics.cardLayouts) {
+      expect(layout.icon.left).toBeGreaterThanOrEqual(layout.card.left);
+      expect(layout.icon.top).toBeGreaterThanOrEqual(layout.card.top);
+      expect(layout.icon.bottom).toBeLessThanOrEqual(layout.card.bottom);
+      expect(Math.ceil(layout.icon.right)).toBeLessThanOrEqual(Math.floor(layout.copy.left));
+      expect(Math.ceil(layout.copy.right)).toBeLessThanOrEqual(Math.floor(layout.arrow.left));
+      expect(Math.ceil(layout.arrow.right)).toBeLessThanOrEqual(Math.ceil(layout.card.right));
+      expect(layout.arrow.width).toBeLessThanOrEqual(36);
+      expect(layout.arrow.height).toBe(layout.arrow.width);
+    }
+
     for (let index = 1; index < metrics.linkBoxes.length; index += 1) {
       expect(metrics.linkBoxes[index].top).toBeGreaterThan(metrics.linkBoxes[index - 1].bottom);
     }
@@ -269,6 +444,159 @@ test.describe("responsive link hub behavior", () => {
     expect(unexpectedRequests).toEqual([]);
     expect(page.consoleErrors).toEqual([]);
     expect(page.pageErrors).toEqual([]);
+
+    if (testInfo.project.name.startsWith("mobile-")) {
+      mkdirSync(mobileReviewDir, { recursive: true });
+      await page.screenshot({
+        path: resolve(mobileReviewDir, `${testInfo.project.name}-full-page.png`),
+        fullPage: true,
+      });
+    }
+  });
+
+  test("serves a mobile-first Venmo helper page", async ({ page, baseURL }, testInfo) => {
+    const requestedUrls = [];
+    page.on("request", (request) => requestedUrls.push(request.url()));
+
+    await page.goto(assetURL(baseURL, "./venmo-group.html"));
+
+    await expect(page).toHaveTitle("Group Venmo | Whiteley Reunion 2026 Links");
+    await expect(page.getByAltText("Venmo QR code for Cherie Journee.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Group Venmo");
+    await expect(page.getByText("Sending Venmo directly to Cherie Journee may be the most reliable method")).toBeVisible();
+
+    await expect(page.getByRole("link", { name: "Open in Venmo app" })).toHaveAttribute(
+      "href",
+      venmoDeepLinkUrl,
+    );
+    await expect(page.getByRole("link", { name: "Open Venmo web link" })).toHaveAttribute(
+      "href",
+      venmoGroupUrl,
+    );
+    await expect(page.getByRole("link", { name: "Open Venmo web link" })).toHaveAttribute(
+      "target",
+      "_blank",
+    );
+    await expect(page.getByRole("link", { name: "Text the Venmo link" })).toHaveAttribute(
+      "href",
+      venmoSmsUrl,
+    );
+    await expect(page.getByRole("link", { name: "All reunion links" })).toHaveAttribute(
+      "href",
+      "./",
+    );
+    await expect(page.locator(".copyable-link")).toHaveText(venmoGroupUrl);
+
+    const metrics = await page.evaluate(() => {
+      const viewportWidth = window.innerWidth;
+      const panels = Array.from(document.querySelectorAll(".venmo-panel, .fallback-panel, .action-button, .venmo-qr img")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          right: rect.right,
+          left: rect.left,
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+
+      return {
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth,
+        panels,
+      };
+    });
+
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
+    for (const panel of metrics.panels) {
+      expect(panel.height).toBeGreaterThanOrEqual(48);
+      expect(panel.left).toBeGreaterThanOrEqual(0);
+      expect(Math.ceil(panel.right)).toBeLessThanOrEqual(metrics.viewportWidth);
+    }
+
+    const unexpectedRequests = requestedUrls.filter(
+      (url) => !isAllowedRuntimeRequest(url, baseURL),
+    );
+    expect(unexpectedRequests).toEqual([]);
+    expect(page.consoleErrors).toEqual([]);
+    expect(page.pageErrors).toEqual([]);
+
+    if (testInfo.project.name.startsWith("mobile-")) {
+      mkdirSync(mobileReviewDir, { recursive: true });
+      await page.screenshot({
+        path: resolve(mobileReviewDir, `${testInfo.project.name}-venmo-full-page.png`),
+        fullPage: true,
+      });
+    }
+  });
+
+  test("renders the genealogy page with Google Drive links and thumbnails", async ({ page, baseURL }) => {
+    await page.goto(assetURL(baseURL, "./genealogy.html"));
+
+    await expect(page).toHaveTitle("Genealogy | Whiteley Reunion 2026 Links");
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText("Genealogy");
+    await expect(page.getByRole("link", { name: "All reunion links" })).toHaveAttribute(
+      "href",
+      "./",
+    );
+
+    const nav = page.getByRole("navigation", { name: "Genealogy resource links" });
+    await expect(nav).toBeVisible();
+
+    const links = nav.getByRole("link");
+    await expect(links).toHaveCount(expectedGenealogyLinks.length);
+
+    for (const [index, expectedLink] of expectedGenealogyLinks.entries()) {
+      const link = links.nth(index);
+      await expect(link).toContainText(expectedLink.title);
+      await expect(link).toContainText(expectedLink.description);
+      await expect(link).toHaveAttribute("href", expectedLink.href);
+      await expect(link.locator(".link-icon img")).toHaveAttribute("src", expectedLink.icon);
+      await expect(link.locator(".link-icon img")).toHaveAttribute("alt", "");
+    }
+
+    const metrics = await page.evaluate(() => {
+      const viewportWidth = window.innerWidth;
+      const linkBoxes = Array.from(document.querySelectorAll(".link-card")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          right: rect.right,
+          bottom: rect.bottom,
+          left: rect.left,
+          height: rect.height,
+        };
+      });
+      const iconBoxes = Array.from(document.querySelectorAll(".link-icon")).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          width: rect.width,
+          height: rect.height,
+        };
+      });
+
+      return {
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+        viewportWidth,
+        linkBoxes,
+        iconBoxes,
+      };
+    });
+
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
+    for (const box of metrics.linkBoxes) {
+      expect(box.height).toBeGreaterThanOrEqual(48);
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(Math.ceil(box.right)).toBeLessThanOrEqual(metrics.viewportWidth);
+    }
+
+    expect(metrics.iconBoxes).toHaveLength(expectedGenealogyLinks.length);
+    for (const box of metrics.iconBoxes) {
+      expect(box.width).toBeGreaterThanOrEqual(32);
+      expect(box.width).toBeLessThanOrEqual(56);
+      expect(box.height).toBe(box.width);
+    }
   });
 
   test("uses the navy theme and optimized responsive poster", async ({ page, baseURL }) => {
