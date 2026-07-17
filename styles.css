@@ -188,6 +188,10 @@ h1 {
   place-items: center;
 }
 
+.link-card[href="./genealogy.html"] .link-icon {
+  background: var(--color-page);
+}
+
 .link-icon img {
   display: block;
   width: 72%;
