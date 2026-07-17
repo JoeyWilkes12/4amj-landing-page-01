@@ -20,6 +20,7 @@ agents.md
 README.md
 .nojekyll
 assets/
+assets/link-icons/
 ```
 
 Regression test files:
@@ -120,6 +121,7 @@ REGRESSION_PORT                  Override the local server port. Default: 4173.
 LIVE_BASE_URL                    Override the live deployment URL.
 PLAYWRIGHT_TEST_VERSION          Override the pinned Playwright Test version. Default: 1.61.1.
 PLAYWRIGHT_INSTALL_BROWSERS=skip Skip Playwright's Chromium install step.
+PLAYWRIGHT_WORKERS               Override parallel test workers. Default: 2.
 PLAYWRIGHT_HTML_OPEN             Controls the Playwright HTML report auto-open behavior. Default: never.
 CI=1                             Enables one retry through Playwright config.
 ```
@@ -206,6 +208,8 @@ The page uses a navy-only theme matched to the poster background. The display te
 ## Editing images
 
 Poster assets live in `assets/` as responsive WebP files. Keep committed image files lightweight, prefer multiple responsive sizes through `srcset`, and avoid committing original multi-megabyte source files.
+
+Link card icons live in `assets/link-icons/`. Keep each displayed icon under 25 KB and use the fixed circular icon frame in `styles.css` so every link displays with consistent dimensions.
 
 The current poster derivatives are:
 

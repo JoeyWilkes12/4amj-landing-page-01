@@ -138,11 +138,11 @@ h1 {
 
 .link-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-4);
+  grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+  gap: var(--space-3);
   align-items: center;
-  min-height: 5.5rem;
-  padding: var(--space-5);
+  min-height: 6rem;
+  padding: var(--space-4);
   color: var(--color-text-dark);
   text-decoration: none;
   background: var(--color-surface);
@@ -171,6 +171,27 @@ h1 {
 .link-card:focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 4px;
+}
+
+.link-icon {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(214, 187, 114, 0.18), rgba(13, 36, 72, 0.08)),
+    #ffffff;
+  border: 1px solid rgba(13, 36, 72, 0.12);
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 253, 247, 0.65);
+  place-items: center;
+}
+
+.link-icon img {
+  display: block;
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
 }
 
 .link-copy {
@@ -217,7 +238,14 @@ h1 {
   }
 
   .link-card {
+    grid-template-columns: 3.25rem minmax(0, 1fr) auto;
+    gap: var(--space-4);
     padding: var(--space-6);
+  }
+
+  .link-icon {
+    width: 3.25rem;
+    height: 3.25rem;
   }
 }
 
