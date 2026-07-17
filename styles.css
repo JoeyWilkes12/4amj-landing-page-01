@@ -199,6 +199,10 @@ h1 {
   object-fit: contain;
 }
 
+.link-card[href="./genealogy.html"] .link-icon img {
+  border-radius: 999px;
+}
+
 .link-thumbnail img {
   width: 100%;
   height: 100%;
