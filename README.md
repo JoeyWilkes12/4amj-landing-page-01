@@ -2,7 +2,11 @@
 
 A small, static link hub for the Whiteley Reunion 2026. It gives family members quick access to William Henry Adams family history, food planning, and other shared reunion links.
 
-This repository is designed for GitHub Pages, but the site is plain HTML and CSS. There is no framework, package manager, build step, analytics, or external runtime dependency.
+This repository is designed for GitHub Pages, but the site is plain HTML and CSS. There is no framework, package manager, build step, analytics, or external runtime dependency. The page is intentionally lightweight so GitHub Pages can serve the site to 100+ near-simultaneous visitors.
+
+## Preferred version
+
+`v1.2.0-navy` is the preferred production direction for this landing page and should be used as the base for future work. Compared with `v1.3.0`, this branch keeps the simpler navy poster-first design, the current reunion link order, and the regression coverage that matches the intended mobile-first experience. New versions should branch from `v1.2.0-navy` unless there is a specific reason to revive the `v1.3.0` direction.
 
 ## Repository layout
 
@@ -12,8 +16,10 @@ Published site files:
 /
 index.html
 styles.css
+agents.md
 README.md
 .nojekyll
+assets/
 ```
 
 Regression test files:
@@ -145,18 +151,18 @@ The suite checks:
 - static source contract for GitHub Pages readiness
 - absence of package manager and runtime dependencies
 - landing page and stylesheet availability
+- optimized local poster image availability and size budget
 - expected title, copy, link labels, descriptions, and destinations
 - no horizontal overflow at supported viewport widths
-- no overlap between the theme toggle and header content
+- poster, header, and links remain separated without overlap
 - keyboard tab order and visible focus outlines
 - minimum tap target sizing for link cards
-- light theme default and CSS-only dark theme toggle
-- readable contrast in light and dark themes
+- navy theme token and readable contrast
 - reduced motion behavior
 - no unexpected external runtime requests
 - no browser console errors or page errors
 
-The tests intentionally duplicate important content and URLs. When you change visible copy, link destinations, color tokens, or core behavior, update `index.html`, `styles.css`, and the matching expectations in `tests/regression.spec.mjs` together.
+The tests intentionally duplicate important content, URLs, color tokens, and image asset names. When you change visible copy, link destinations, color tokens, poster assets, or core behavior, update `index.html`, `styles.css`, and the matching expectations in `tests/regression.spec.mjs` together.
 
 ## Editing content
 
@@ -179,8 +185,8 @@ Change the `href` value to the real destination when it is ready. Good replaceme
 The current links are:
 
 - William Henry Adams: `https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng`
-- Reunion Food: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
-- Misc: `./misc/`
+- Reunion Schedule & Food: `https://joeywilkes12.github.io/digital-schedule-website/`
+- Miscellaneous: `https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link`
 
 Relative links are used for local reunion pages so the site works as either a GitHub Pages user site or a project site. External links can use full URLs.
 
@@ -193,20 +199,36 @@ Open `index.html` to change the main wording:
 
 Open `styles.css` to change colors, spacing, border radius, shadows, width, or transitions. These values are grouped at the top of the file as CSS custom properties.
 
-The theme toggle is CSS-only and defaults to the light theme. The display text uses a local Trajan/Cinzel-inspired serif stack to echo the poster lettering without loading external fonts.
+The page uses a navy-only theme matched to the poster background. The display text uses a local Trajan/Cinzel-inspired serif stack to echo the poster lettering without loading external fonts.
+
+## Editing images
+
+Poster assets live in `assets/` as responsive WebP files. Keep committed image files lightweight, prefer multiple responsive sizes through `srcset`, and avoid committing original multi-megabyte source files.
+
+The current poster derivatives are:
+
+- `assets/whiteley-reunion-poster-720.webp`
+- `assets/whiteley-reunion-poster-1080.webp`
+- `assets/whiteley-reunion-poster-1440.webp`
+
+Keep each displayed derivative under 150 KB unless there is a clear deployment reason to change the budget.
 
 ## Deployment
 
 Publish the repository root through GitHub Pages:
 
-1. Create a GitHub repository.
-2. Add the repository files to the repository root.
-3. Commit and push the files.
+1. Commit changes on a feature branch.
+2. Open a pull request.
+3. Merge to `main` after review.
 4. Open the repository Settings.
 5. Go to Pages.
 6. Publish from the `main` branch and the root folder.
 
-After GitHub Pages is enabled, replace the commented canonical URL placeholder in `index.html` with the final Pages URL if you want a canonical link.
+The production GitHub Pages URL is:
+
+```text
+https://joeywilkes12.github.io/4amj-landing-page-01/
+```
 
 ## Hosting fallback options
 

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +7,13 @@ const testRoot = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(testRoot, "..");
 
 const expectedTitle = "Whiteley Reunion 2026 Links";
+const expectedPosterAlt =
+  "Whiteley reunion poster with a family tree, William Henry Adams name, and ancestor portrait on a navy background.";
+const expectedPosterAssets = [
+  { path: "./assets/whiteley-reunion-poster-720.webp", width: 720, height: 480 },
+  { path: "./assets/whiteley-reunion-poster-1080.webp", width: 1080, height: 720 },
+  { path: "./assets/whiteley-reunion-poster-1440.webp", width: 1440, height: 960 },
+];
 const expectedLinks = [
   {
     title: "William Henry Adams",
@@ -15,15 +22,15 @@ const expectedLinks = [
       "https://history.churchofjesuschrist.org/chd/individual/william-henry-adams-sr-1817?lang=eng",
   },
   {
-    title: "Reunion Food",
-    description: "Meal plans, food assignments & schedule, and dietary notes.",
-    href:
-      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
+    title: "Reunion Schedule & Food",
+    description: "Schedule overview and food details.",
+    href: "https://joeywilkes12.github.io/digital-schedule-website/",
   },
   {
-    title: "Misc",
-    description: "Other reunion resources, announcements, maps, schedules, and shared links.",
-    href: "./misc/",
+    title: "Miscellaneous",
+    description: "Google Drive file share for downloadable and viewable resources.",
+    href:
+      "https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link",
   },
 ];
 
@@ -84,19 +91,12 @@ function durationToMs(value) {
   throw new Error(`Could not parse duration: ${value}`);
 }
 
-function overlaps(a, b) {
-  return !(a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top);
-}
-
-async function waitForThemeTransition(page) {
-  await page.waitForTimeout(250);
-}
-
 test.describe("static source contract", () => {
   test("keeps the site dependency-free and GitHub Pages-ready", async () => {
     const index = readSiteFile("index.html");
     const styles = readSiteFile("styles.css");
     const readme = readSiteFile("README.md");
+    const agents = readSiteFile("agents.md");
 
     expect(existsSync(resolve(siteRoot, ".nojekyll"))).toBe(true);
     expect(existsSync(resolve(siteRoot, "package.json"))).toBe(false);
@@ -105,10 +105,14 @@ test.describe("static source contract", () => {
     expect(index).toContain('<meta name="viewport" content="width=device-width, initial-scale=1">');
     expect(index).toContain('<meta property="og:title" content="Whiteley Reunion 2026 Links">');
     expect(index).toContain('<meta property="og:type" content="website">');
-    expect(index).toContain("Add a canonical URL here");
+    expect(index).toContain('<meta property="og:url" content="https://joeywilkes12.github.io/4amj-landing-page-01/">');
+    expect(index).toContain('<link rel="canonical" href="https://joeywilkes12.github.io/4amj-landing-page-01/">');
+    expect(index).toContain("assets/whiteley-reunion-poster-1440.webp");
+    expect(index).toContain(`alt="${expectedPosterAlt}"`);
     expect(index).toContain('<link rel="stylesheet" href="./styles.css">');
     expect(index).toContain('aria-label="Whiteley reunion resource links"');
-    expect(index).toContain('aria-label="Toggle dark theme"');
+    expect(index).not.toContain('aria-label="Toggle dark theme"');
+    expect(index).not.toContain('id="theme-toggle"');
     expect(index).not.toContain("Update these links as reunion plans change.");
     expect(index).not.toContain("Family Reunion Links");
     expect(index).not.toContain("./genealogy/");
@@ -128,12 +132,22 @@ test.describe("static source contract", () => {
       expect(styles, `styles.css should not match ${pattern}`).not.toMatch(pattern);
     }
 
-    expect(styles).toContain("#687249");
-    expect(styles).toContain("#b0c088");
-    expect(styles).toContain("body:has(.theme-toggle-input:checked)");
+    expect(styles).toContain("--color-page: #0d2448;");
+    expect(styles).toContain("--color-accent: #d6bb72;");
+    expect(styles).not.toContain("body:has(.theme-toggle-input:checked)");
+    expect(styles).not.toContain(".theme-toggle");
     expect(styles).toContain("@media (prefers-reduced-motion: reduce)");
     expect(styles).toContain('"Trajan Pro"');
+    expect(agents).toContain("https://joeywilkes12.github.io/4amj-landing-page-01/");
+    expect(agents).toContain("100+ near-simultaneous visitors");
+    expect(agents).toContain("Optimize visual assets");
     expect(readme).toContain("bash tests/run-regression.sh");
+
+    for (const asset of expectedPosterAssets) {
+      const assetPath = resolve(siteRoot, asset.path);
+      expect(existsSync(assetPath), `${asset.path} should exist`).toBe(true);
+      expect(statSync(assetPath).size, `${asset.path} should stay under 150 KB`).toBeLessThan(150 * 1024);
+    }
   });
 });
 
@@ -160,16 +174,23 @@ test.describe("responsive link hub behavior", () => {
 
     const stylesheetResponse = await request.get(assetURL(baseURL, "./styles.css"));
     expect(stylesheetResponse.status()).toBe(200);
-    expect(await stylesheetResponse.text()).toContain("--color-accent: #687249;");
+    expect(await stylesheetResponse.text()).toContain("--color-page: #0d2448;");
+
+    for (const asset of expectedPosterAssets) {
+      const assetResponse = await request.get(assetURL(baseURL, asset.path));
+      expect(assetResponse.status(), `${asset.path} should be served`).toBe(200);
+      expect((await assetResponse.body()).length, `${asset.path} should be lightweight`).toBeLessThan(150 * 1024);
+    }
   });
 
-  test("renders core content, links, and layout without overflow", async ({ page, baseURL }) => {
+  test("renders poster, core content, links, and layout without overflow", async ({ page, baseURL }) => {
     const requestedUrls = [];
     page.on("request", (request) => requestedUrls.push(request.url()));
 
     await page.goto(homeURL(baseURL));
 
     await expect(page).toHaveTitle(expectedTitle);
+    await expect(page.getByAltText(expectedPosterAlt)).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(expectedTitle);
     await expect(page.getByText("Whiteley Reunion 2026", { exact: true })).toBeVisible();
     await expect(page.getByText("Update these links as reunion plans change.")).toHaveCount(0);
@@ -200,8 +221,7 @@ test.describe("responsive link hub behavior", () => {
           height: rect.height,
         };
       });
-      const toggle = document.querySelector(".theme-toggle").getBoundingClientRect();
-      const avatar = document.querySelector(".avatar").getBoundingClientRect();
+      const poster = document.querySelector(".poster img").getBoundingClientRect();
       const heading = document.querySelector("h1").getBoundingClientRect();
 
       return {
@@ -209,17 +229,13 @@ test.describe("responsive link hub behavior", () => {
         scrollWidth: document.documentElement.scrollWidth,
         viewportWidth,
         linkBoxes,
-        toggle: {
-          top: toggle.top,
-          right: toggle.right,
-          bottom: toggle.bottom,
-          left: toggle.left,
-        },
-        avatar: {
-          top: avatar.top,
-          right: avatar.right,
-          bottom: avatar.bottom,
-          left: avatar.left,
+        poster: {
+          top: poster.top,
+          right: poster.right,
+          bottom: poster.bottom,
+          left: poster.left,
+          width: poster.width,
+          height: poster.height,
         },
         heading: {
           top: heading.top,
@@ -231,6 +247,11 @@ test.describe("responsive link hub behavior", () => {
     });
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
+    expect(metrics.poster.width).toBeGreaterThan(0);
+    expect(metrics.poster.height).toBeGreaterThan(0);
+    expect(metrics.poster.left).toBeGreaterThanOrEqual(0);
+    expect(Math.ceil(metrics.poster.right)).toBeLessThanOrEqual(metrics.viewportWidth);
+    expect(metrics.poster.bottom).toBeLessThan(metrics.heading.top);
 
     for (const box of metrics.linkBoxes) {
       expect(box.height).toBeGreaterThanOrEqual(48);
@@ -242,9 +263,6 @@ test.describe("responsive link hub behavior", () => {
       expect(metrics.linkBoxes[index].top).toBeGreaterThan(metrics.linkBoxes[index - 1].bottom);
     }
 
-    expect(overlaps(metrics.toggle, metrics.avatar)).toBe(false);
-    expect(overlaps(metrics.toggle, metrics.heading)).toBe(false);
-
     const unexpectedRequests = requestedUrls.filter(
       (url) => !isAllowedRuntimeRequest(url, baseURL),
     );
@@ -253,66 +271,43 @@ test.describe("responsive link hub behavior", () => {
     expect(page.pageErrors).toEqual([]);
   });
 
-  test("defaults to light theme and toggles to dark theme", async ({ page, baseURL }) => {
+  test("uses the navy theme and optimized responsive poster", async ({ page, baseURL }) => {
     await page.goto(homeURL(baseURL));
 
-    const toggle = page.getByRole("checkbox", { name: "Toggle dark theme" });
-    await expect(toggle).not.toBeChecked();
+    await expect(page.getByRole("checkbox", { name: "Toggle dark theme" })).toHaveCount(0);
 
-    const lightTheme = await page.evaluate(() => {
+    const theme = await page.evaluate(() => {
       const bodyStyles = getComputedStyle(document.body);
-      const cardStyles = getComputedStyle(document.querySelector(".link-hub"));
+      const linkStyles = getComputedStyle(document.querySelector(".link-card"));
+      const poster = document.querySelector(".poster img");
+      const posterRect = poster.getBoundingClientRect();
       return {
         background: bodyStyles.backgroundColor,
         color: bodyStyles.color,
+        page: bodyStyles.getPropertyValue("--color-page").trim(),
         accent: bodyStyles.getPropertyValue("--color-accent").trim(),
-        cardBackground: cardStyles.backgroundColor,
+        linkColor: linkStyles.color,
+        linkBackground: linkStyles.backgroundColor,
+        posterComplete: poster.complete,
+        posterWidth: posterRect.width,
+        posterHeight: posterRect.height,
+        posterSrc: poster.currentSrc,
       };
     });
 
-    expect(lightTheme.accent).toBe("#687249");
-
-    await toggle.click();
-    await waitForThemeTransition(page);
-    await expect(toggle).toBeChecked();
-
-    const darkTheme = await page.evaluate(() => {
-      const bodyStyles = getComputedStyle(document.body);
-      const cardStyles = getComputedStyle(document.querySelector(".link-hub"));
-      const avatarStyles = getComputedStyle(document.querySelector(".avatar"));
-      return {
-        background: bodyStyles.backgroundColor,
-        color: bodyStyles.color,
-        accent: bodyStyles.getPropertyValue("--color-accent").trim(),
-        cardBackground: cardStyles.backgroundColor,
-        avatarBackground: avatarStyles.backgroundColor,
-        avatarColor: avatarStyles.color,
-      };
-    });
-
-    expect(darkTheme.accent).toBe("#b0c088");
-    expect(darkTheme.background).not.toBe(lightTheme.background);
-    expect(darkTheme.cardBackground).not.toBe(lightTheme.cardBackground);
-    expect(contrastRatio(darkTheme.avatarColor, darkTheme.avatarBackground)).toBeGreaterThanOrEqual(4.5);
+    expect(theme.page).toBe("#0d2448");
+    expect(theme.accent).toBe("#d6bb72");
+    expect(theme.posterComplete).toBe(true);
+    expect(theme.posterSrc).toContain("assets/whiteley-reunion-poster-");
+    expect(theme.posterSrc).toContain(".webp");
+    expect(theme.posterWidth).toBeGreaterThan(0);
+    expect(theme.posterHeight).toBeGreaterThan(0);
+    expect(contrastRatio(theme.color, theme.background)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(theme.linkColor, theme.linkBackground)).toBeGreaterThanOrEqual(4.5);
   });
 
   test("keeps keyboard order and visible focus states", async ({ page, baseURL }) => {
     await page.goto(homeURL(baseURL));
-    await page.keyboard.press("Tab");
-
-    const toggle = page.locator("#theme-toggle");
-    await expect(toggle).toBeFocused();
-
-    const toggleFocus = await page.locator(".theme-toggle").evaluate((element) => {
-      const styles = getComputedStyle(element);
-      return {
-        outlineStyle: styles.outlineStyle,
-        outlineWidth: styles.outlineWidth,
-      };
-    });
-
-    expect(toggleFocus.outlineStyle).toBe("solid");
-    expect(Number.parseFloat(toggleFocus.outlineWidth)).toBeGreaterThanOrEqual(3);
 
     const expectedFocusOrder = expectedLinks.map((link) => link.href);
     for (const href of expectedFocusOrder) {
@@ -332,14 +327,12 @@ test.describe("responsive link hub behavior", () => {
     }
   });
 
-  test("maintains readable contrast in light and dark themes", async ({ page, baseURL }) => {
+  test("maintains readable contrast in the navy theme", async ({ page, baseURL }) => {
     await page.goto(homeURL(baseURL));
 
     async function sampleContrast() {
       return page.evaluate(() => {
-        const card = document.querySelector(".link-hub");
         const link = document.querySelector(".link-card");
-        const cardBackground = getComputedStyle(card).backgroundColor;
         const linkBackground = getComputedStyle(link).backgroundColor;
 
         return [
@@ -351,12 +344,17 @@ test.describe("responsive link hub behavior", () => {
           {
             name: "heading",
             foreground: getComputedStyle(document.querySelector("h1")).color,
-            background: cardBackground,
+            background: getComputedStyle(document.body).backgroundColor,
           },
           {
             name: "subtitle",
             foreground: getComputedStyle(document.querySelector(".subtitle")).color,
-            background: cardBackground,
+            background: getComputedStyle(document.body).backgroundColor,
+          },
+          {
+            name: "link title",
+            foreground: getComputedStyle(document.querySelector(".link-title")).color,
+            background: linkBackground,
           },
           {
             name: "link description",
@@ -369,13 +367,6 @@ test.describe("responsive link hub behavior", () => {
 
     for (const sample of await sampleContrast()) {
       expect(contrastRatio(sample.foreground, sample.background), sample.name).toBeGreaterThanOrEqual(4.5);
-    }
-
-    await page.getByRole("checkbox", { name: "Toggle dark theme" }).click();
-    await waitForThemeTransition(page);
-
-    for (const sample of await sampleContrast()) {
-      expect(contrastRatio(sample.foreground, sample.background), `dark ${sample.name}`).toBeGreaterThanOrEqual(4.5);
     }
   });
 

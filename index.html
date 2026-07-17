@@ -14,31 +14,37 @@
       content="Quick access to William Henry Adams family history, food planning, and shared reunion resources."
     >
     <meta property="og:type" content="website">
-    <!-- Add a canonical URL here after the final GitHub Pages URL is known. -->
-    <!-- <link rel="canonical" href="https://USERNAME.github.io/REPOSITORY/"> -->
+    <meta property="og:url" content="https://joeywilkes12.github.io/4amj-landing-page-01/">
+    <meta property="og:image" content="https://joeywilkes12.github.io/4amj-landing-page-01/assets/whiteley-reunion-poster-1440.webp">
+    <link rel="canonical" href="https://joeywilkes12.github.io/4amj-landing-page-01/">
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
     <main class="page-shell">
       <section class="link-hub" aria-labelledby="page-title">
-        <input
-          class="theme-toggle-input"
-          type="checkbox"
-          id="theme-toggle"
-          aria-label="Toggle dark theme"
-        >
-        <label
-          class="theme-toggle"
-          for="theme-toggle"
-          title="Toggle dark theme"
-          aria-hidden="true"
-        >
-          <span class="theme-toggle-icon" aria-hidden="true"></span>
-        </label>
-
         <header class="site-header">
-          <div class="avatar" aria-hidden="true">WR</div>
+          <figure class="poster">
+            <picture>
+              <source
+                type="image/webp"
+                srcset="
+                  ./assets/whiteley-reunion-poster-720.webp 720w,
+                  ./assets/whiteley-reunion-poster-1080.webp 1080w,
+                  ./assets/whiteley-reunion-poster-1440.webp 1440w
+                "
+                sizes="(min-width: 48rem) 44rem, calc(100vw - 2rem)"
+              >
+              <img
+                src="./assets/whiteley-reunion-poster-720.webp"
+                width="1440"
+                height="960"
+                alt="Whiteley reunion poster with a family tree, William Henry Adams name, and ancestor portrait on a navy background."
+                decoding="async"
+                fetchpriority="high"
+              >
+            </picture>
+          </figure>
           <p class="eyebrow">Whiteley Reunion 2026</p>
           <h1 id="page-title">Whiteley Reunion 2026 Links</h1>
           <p class="subtitle">
@@ -59,22 +65,21 @@
             </span>
             <span class="link-arrow" aria-hidden="true">-&gt;</span>
           </a>
-
-          <a class="link-card" href="https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link">
+          <a class="link-card" href="https://joeywilkes12.github.io/digital-schedule-website/">
             <span class="link-copy">
-              <span class="link-title">Reunion Food</span>
+              <span class="link-title">Reunion Schedule & Food</span>
               <span class="link-description">
-                Meal plans, food assignments & schedule, and dietary notes.
+                Schedule overview and food details.
               </span>
             </span>
             <span class="link-arrow" aria-hidden="true">-&gt;</span>
           </a>
 
-          <a class="link-card" href="./misc/">
+          <a class="link-card" href="https://drive.google.com/drive/folders/1X6xjdzl1-UoIe6IiTYsXtW1w0s-_mGxA?usp=drive_link">
             <span class="link-copy">
-              <span class="link-title">Misc</span>
+              <span class="link-title">Miscellaneous</span>
               <span class="link-description">
-                Other reunion resources, announcements, maps, schedules, and shared links.
+                Google Drive file share for downloadable and viewable resources.
               </span>
             </span>
             <span class="link-arrow" aria-hidden="true">-&gt;</span>
