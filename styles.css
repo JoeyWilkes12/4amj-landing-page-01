@@ -291,6 +291,16 @@ h1 {
   text-underline-offset: 0.2em;
 }
 
+.venmo-helper > .eyebrow,
+.venmo-helper > h1 {
+  justify-self: center;
+  text-align: center;
+}
+
+.venmo-helper > .eyebrow {
+  margin: var(--space-2) 0 calc(-1 * var(--space-2));
+}
+
 .subpage-header {
   display: grid;
   justify-items: center;
@@ -379,6 +389,7 @@ h1 {
 
 .action-button {
   display: grid;
+  gap: 0.18rem;
   min-height: 3.25rem;
   padding: 0.8rem var(--space-4);
   color: var(--color-text-dark);
@@ -392,10 +403,36 @@ h1 {
   place-items: center;
 }
 
+.action-button:hover {
+  background: var(--color-surface-soft);
+  border-color: var(--color-accent);
+}
+
 .action-primary {
   color: var(--color-page-deep);
   background: var(--color-accent-strong);
   border-color: var(--color-accent);
+}
+
+.action-primary:hover {
+  background: #ffe7a4;
+}
+
+.action-danger {
+  color: #5a1515;
+  background: #ffe8e8;
+  border-color: #efb8b8;
+}
+
+.action-danger:hover {
+  background: #ffdada;
+  border-color: #dd8f8f;
+}
+
+.action-note {
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .action-button:focus-visible,
@@ -409,6 +446,11 @@ h1 {
   padding: var(--space-4);
 }
 
+.preferred-panel {
+  display: grid;
+  gap: var(--space-3);
+}
+
 .fallback-panel h2 {
   margin: 0;
   color: var(--color-text-dark);
@@ -419,15 +461,35 @@ h1 {
 }
 
 .fallback-panel p {
-  margin: var(--space-3) 0 0;
+  margin: 0;
   color: var(--color-muted-dark);
 }
 
 .copyable-link {
   display: block;
+  padding: 0.75rem;
   color: var(--color-page);
+  background: rgba(13, 36, 72, 0.06);
+  border: 1px solid rgba(13, 36, 72, 0.12);
+  border-radius: var(--radius-sm);
   overflow-wrap: anywhere;
   font-weight: 700;
+  line-height: 1.35;
+}
+
+.method-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+  padding-left: 1.35rem;
+  color: var(--color-text-dark);
+  font-size: 0.95rem;
+  text-align: left;
+}
+
+.method-list li {
+  padding-left: var(--space-1);
+  line-height: 1.4;
 }
 
 @media (min-width: 48rem) {
@@ -470,6 +532,10 @@ h1 {
 
   .fallback-panel {
     padding: var(--space-6);
+  }
+
+  .method-list {
+    font-size: 1rem;
   }
 }
 

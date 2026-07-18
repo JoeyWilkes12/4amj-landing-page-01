@@ -27,7 +27,7 @@ const venmoGroupUrl =
   "https://link.venmo.com/groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
 const venmoDeepLinkUrl = "venmo://groups/link/2838e16e-4031-4ccd-ac34-4581d1673ffd";
 const venmoSmsUrl =
-  "sms:?&body=Whiteley%20Reunion%20Group%20Venmo%3A%20https%3A%2F%2Flink.venmo.com%2Fgroups%2Flink%2F2838e16e-4031-4ccd-ac34-4581d1673ffd";
+  "sms:?&body=Hi%20Cherie%2C%20can%20you%20text%20me%20the%20Venmo%20group%20link%3F";
 const expectedLinks = [
   {
     title: "Genealogy",
@@ -164,8 +164,10 @@ test.describe("static source contract", () => {
     expect(venmoPage).toContain(venmoDeepLinkUrl);
     expect(venmoPage).toContain(cherieVenmoQrAsset.src);
     expect(venmoPage).toContain("alt=\"Venmo QR code for Cherie Journee.\"");
-    expect(venmoPage).toContain("sms:?&amp;body=Whiteley%20Reunion%20Group%20Venmo");
-    expect(venmoPage).toContain("Text the Venmo link");
+    expect(venmoPage).toContain("sms:?&amp;body=Hi%20Cherie");
+    expect(venmoPage).toContain("Text Cherie for the Venmo group link");
+    expect(venmoPage).toContain("Preferred method");
+    expect(venmoPage).toContain("Click the full URL above");
     expect(venmoPage).toContain("All reunion links");
     expect(genealogyPage).toContain('<title>Genealogy | Whiteley Reunion 2026 Links</title>');
     expect(genealogyPage).toContain('<a class="back-link" href="./">&lt;- All reunion links</a>');
@@ -463,32 +465,42 @@ test.describe("responsive link hub behavior", () => {
     await expect(page).toHaveTitle("Group Venmo | Whiteley Reunion 2026 Links");
     await expect(page.getByAltText("Venmo QR code for Cherie Journee.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1 })).toHaveText("Group Venmo");
-    await expect(page.getByText("Sending Venmo directly to Cherie Journee may be the most reliable method")).toBeVisible();
+    await expect(page.getByText("Sending Venmo directly to Cherie Journee could also work.")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Preferred method" })).toBeVisible();
 
-    await expect(page.getByRole("link", { name: "Open in Venmo app" })).toHaveAttribute(
-      "href",
-      venmoDeepLinkUrl,
-    );
-    await expect(page.getByRole("link", { name: "Open Venmo web link" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: venmoGroupUrl })).toHaveAttribute(
       "href",
       venmoGroupUrl,
     );
-    await expect(page.getByRole("link", { name: "Open Venmo web link" })).toHaveAttribute(
-      "target",
-      "_blank",
-    );
-    await expect(page.getByRole("link", { name: "Text the Venmo link" })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: "Text Cherie for the Venmo group link" })).toHaveAttribute(
       "href",
       venmoSmsUrl,
+    );
+    await expect(page.getByRole("link", { name: "Text Cherie for the Venmo group link" })).toHaveClass(
+      /action-primary/,
+    );
+    await expect(page.getByRole("link", { name: /Last option: open Venmo directly/ })).toHaveAttribute(
+      "href",
+      venmoDeepLinkUrl,
+    );
+    await expect(page.getByRole("link", { name: /Last option: open Venmo directly/ })).toHaveClass(
+      /action-danger/,
+    );
+    await expect(page.locator(".action-note")).toHaveText(
+      "Although this doesn't open to the group link or Cherie's profile.",
     );
     await expect(page.getByRole("link", { name: "All reunion links" })).toHaveAttribute(
       "href",
       "./",
     );
     await expect(page.locator(".copyable-link")).toHaveText(venmoGroupUrl);
+    await expect(page.locator(".method-list li")).toHaveCount(4);
 
     const metrics = await page.evaluate(() => {
       const viewportWidth = window.innerWidth;
+      const fallbackPanel = document.querySelector(".fallback-panel").getBoundingClientRect();
+      const venmoPanel = document.querySelector(".venmo-panel").getBoundingClientRect();
+      const actionButtons = Array.from(document.querySelectorAll(".action-button"));
       const panels = Array.from(document.querySelectorAll(".venmo-panel, .fallback-panel, .action-button, .venmo-qr img")).map((element) => {
         const rect = element.getBoundingClientRect();
         return {
@@ -504,10 +516,15 @@ test.describe("responsive link hub behavior", () => {
         scrollWidth: document.documentElement.scrollWidth,
         viewportWidth,
         panels,
+        fallbackTop: fallbackPanel.top,
+        venmoPanelTop: venmoPanel.top,
+        firstActionText: actionButtons[0].textContent.trim(),
       };
     });
 
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
+    expect(metrics.fallbackTop).toBeLessThan(metrics.venmoPanelTop);
+    expect(metrics.firstActionText).toBe("Text Cherie for the Venmo group link");
     for (const panel of metrics.panels) {
       expect(panel.height).toBeGreaterThanOrEqual(48);
       expect(panel.left).toBeGreaterThanOrEqual(0);
