@@ -293,6 +293,7 @@ h1 {
 
 .venmo-helper > .eyebrow,
 .venmo-helper > h1 {
+  width: 100%;
   justify-self: center;
   text-align: center;
 }
